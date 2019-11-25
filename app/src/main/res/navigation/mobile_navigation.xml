@@ -12,16 +12,16 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_test"
         android:name="pw.byakuren.linuxsync.ui.notiftest.NotificationTestFragment"
-        android:label="@string/menu_gallery"
+        android:label="@string/menu_test"
         tools:layout="@layout/fragment_test" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="pw.byakuren.linuxsync.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_bluetooth"
+        android:name="pw.byakuren.linuxsync.ui.bluetooth.BluetoothFragment"
+        android:label="@string/menu_bluetooth"
+        tools:layout="@layout/fragment_bluetooth" />
 
     <fragment
         android:id="@+id/nav_tools"

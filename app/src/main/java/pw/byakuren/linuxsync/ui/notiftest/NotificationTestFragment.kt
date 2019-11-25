@@ -39,7 +39,7 @@ class NotificationTestFragment : Fragment() {
             .setSmallIcon(R.drawable.ic_menu_send)
             .setContentTitle("Test notification!")
             .setContentText("content")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         with(NotificationManagerCompat.from(view.context)) {
             notify(0, nbuilder.build())
         }
