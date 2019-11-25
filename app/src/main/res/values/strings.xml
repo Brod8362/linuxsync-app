@@ -17,4 +17,7 @@
     <string name="channel_name">NotificationChannel</string>
     <string name="channel_description">Testing Notif Channel</string>
     <string name="test_button">Send Test Notification</string>
+    <string name="ok">OK</string>
+    <string name="bluetooth_unsupported_message">This device does not support bluetooth.</string>
+    <string name="device_unsupported">Device Unsupported</string>
 </resources>
