@@ -20,4 +20,5 @@
     <string name="ok">OK</string>
     <string name="bluetooth_unsupported_message">This device does not support bluetooth.</string>
     <string name="device_unsupported">Device Unsupported</string>
+    <string name="socket_failed">Socket Failed</string>
 </resources>

@@ -64,7 +64,8 @@ class BluetoothFragment : Fragment() {
 
         /* Retrieve already paired devices. */
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        initBluetooth(bluetoothAdapter, pairedDevices)
+        val socket = initBluetooth(bluetoothAdapter, pairedDevices)
+
 
         return root
     }
@@ -75,9 +76,7 @@ class BluetoothFragment : Fragment() {
         }
         builder?.apply {
             setPositiveButton(R.string.ok
-            ) { _, _ ->
-                exitProcess(1)
-            }
+            ) { _, _ -> }
         }
 
         builder?.setMessage(R.string.bluetooth_unsupported_message)
@@ -93,15 +92,36 @@ class BluetoothFragment : Fragment() {
     private fun initBluetooth(bt: BluetoothAdapter?, paired: Set<BluetoothDevice>?): BluetoothSocket? {
         bt?.cancelDiscovery()
         val device = getTrustedBluetoothDevice(paired)
-        val socket = device?.createL2capChannel(0x1001)
+        if (device == null) {
+            Toast.makeText(this.context, "Paired device not found.", Toast.LENGTH_LONG).show()
+            exitProcess(1)
+        }
+        val socket = device.createInsecureL2capChannel(0x1001)
         try {
-            socket?.connect()
+            socket.connect()
         } catch (e: IOException) {
-            Toast.makeText(this.context, "Failed to connect to bluetooth socket", Toast.LENGTH_LONG).show()
+            displaySocketFailedError(e)
             e.printStackTrace()
+            return null
         }
         Toast.makeText(this.context, "Connected to bluetooth socket", Toast.LENGTH_LONG).show()
         return socket
         // consider using code from https://developer.android.com/guide/topics/connectivity/bluetooth#ConnectDevices here
+    }
+
+    private fun displaySocketFailedError(e: IOException) {
+        val builder: AlertDialog.Builder? = activity?.let {
+            AlertDialog.Builder(it)
+        }
+        builder?.apply {
+            setPositiveButton(R.string.ok
+            ) { _, _ ->
+                exitProcess(1)
+            }
+        }
+
+        builder?.setMessage(e.localizedMessage)
+            ?.setTitle(R.string.socket_failed)
+        builder?.create()?.show()
     }
 }
