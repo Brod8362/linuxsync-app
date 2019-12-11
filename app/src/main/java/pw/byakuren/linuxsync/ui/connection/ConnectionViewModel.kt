@@ -1,10 +1,10 @@
-package pw.byakuren.linuxsync.ui.bluetooth
+package pw.byakuren.linuxsync.ui.connection
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class BluetoothViewModel : ViewModel() {
+class ConnectionViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is bluetooth Fragment"

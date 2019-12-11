@@ -13,9 +13,9 @@
             android:icon="@drawable/ic_menu_test"
             android:title="@string/menu_test" />
         <item
-            android:id="@+id/nav_bluetooth"
-            android:icon="@drawable/ic_menu_bluetooth"
-            android:title="@string/menu_bluetooth" />
+            android:id="@+id/nav_connection"
+            android:icon="@drawable/ic_menu_connection"
+            android:title="@string/menu_connection" />
         <item
             android:id="@+id/nav_tools"
             android:icon="@drawable/ic_menu_manage"

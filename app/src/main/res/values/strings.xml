@@ -9,7 +9,7 @@
 
     <string name="menu_home">Home</string>
     <string name="menu_test">Test</string>
-    <string name="menu_bluetooth">Bluetooth Pairing</string>
+    <string name="menu_connection">Connection</string>
     <string name="menu_tools">Tools</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
