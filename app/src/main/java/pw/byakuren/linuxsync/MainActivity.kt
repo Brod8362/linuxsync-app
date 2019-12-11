@@ -17,6 +17,8 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
+import android.view.View
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
 
@@ -74,5 +76,13 @@ class MainActivity : AppCompatActivity() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    fun startListen(view: View) {
+        Toast.makeText(this, "start", Toast.LENGTH_LONG).show()
+    }
+
+    fun stopListen(view: View) {
+        Toast.makeText(this, "stop", Toast.LENGTH_LONG).show()
     }
 }

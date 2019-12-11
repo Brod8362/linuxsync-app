@@ -21,4 +21,8 @@
     <string name="bluetooth_unsupported_message">This device does not support bluetooth.</string>
     <string name="device_unsupported">Device Unsupported</string>
     <string name="socket_failed">Socket Failed</string>
+    <string name="hint_ip_address">IP Address</string>
+    <string name="ip_address_text">IP: %1$s</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
 </resources>
