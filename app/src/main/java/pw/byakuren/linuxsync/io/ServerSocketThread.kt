@@ -2,13 +2,14 @@ package pw.byakuren.linuxsync.io
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.ServerSocket
 import java.net.Socket
 
-class ServerSocketThread(context: Context, port: Int) : Thread() {
+class ServerSocketThread(val context: Context, port: Int) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
     private var connectedSocket: Socket? = null
@@ -27,6 +28,15 @@ class ServerSocketThread(context: Context, port: Int) : Thread() {
         readThread = SocketReadThread(DataInputStream(
             BufferedInputStream(connectedSocket?.getInputStream() as InputStream)))
         readThread?.start()
+    }
+
+    fun write(data: ByteArray) {
+        try {
+            connectedSocket?.getOutputStream()?.write(data)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Could not send data", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "Could not send data", e)
+        }
     }
 
     override fun interrupt() {

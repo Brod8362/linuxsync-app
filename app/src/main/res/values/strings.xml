@@ -26,4 +26,6 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="connected_counter">Connected: %1$d</string>
+    <string name="hint_input_buffer">Data to send</string>
+    <string name="Send">Send</string>
 </resources>

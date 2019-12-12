@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.navigation.findNavController
@@ -18,9 +19,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import pw.byakuren.linuxsync.io.ServerSocketThread
+import java.net.BindException
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private var socketThread: ServerSocketThread? = null
 
     private var connectedDevices = 0
+
+    private val TAG = "BYAKUREN_MAIN"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,21 +90,32 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startListen(view: View) {
-        Toast.makeText(this, "start", Toast.LENGTH_LONG).show()
-        socketThread = ServerSocketThread(this, 5000)
+        Toast.makeText(this, "start", Toast.LENGTH_SHORT).show()
+        try {
+            socketThread = ServerSocketThread(this, 5000)
+        } catch (e: BindException) {
+            Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG).show()
+            Log.e(TAG, "BindException", e)
+            return
+        }
         socketThread?.setConnectCallback { connectedDevices++; updateConnectedView() }
         socketThread?.setDisconnectCallback { connectedDevices--; updateConnectedView() }
         socketThread?.start()
     }
 
     fun stopListen(view: View) {
-        Toast.makeText(this, "stop", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show()
         socketThread?.interrupt() //TODO: temporary way to stop socket thread
     }
 
+    fun writeToSocket(view: View) {
+        val text: EditText = findViewById(R.id.send_buffer)
+        socketThread?.write(text.text.toString().toByteArray())
+    }
+
     fun updateConnectedView() {
-        val view: TextView = findViewById(R.id.connected_counter)
-        view.text = getString(R.string.connected_counter, connectedDevices)
+//        val view: TextView = findViewById(R.id.connected_counter)
+//        view.text = getString(R.string.connected_counter, connectedDevices)
     }
 
 
