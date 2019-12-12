@@ -18,11 +18,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import android.view.Menu
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
+import pw.byakuren.linuxsync.io.ServerSocketThread
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+
+    private var socketThread: ServerSocketThread? = null
+
+    private var connectedDevices = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,9 +86,21 @@ class MainActivity : AppCompatActivity() {
 
     fun startListen(view: View) {
         Toast.makeText(this, "start", Toast.LENGTH_LONG).show()
+        socketThread = ServerSocketThread(this, 5000)
+        socketThread?.setConnectCallback { connectedDevices++; updateConnectedView() }
+        socketThread?.setDisconnectCallback { connectedDevices--; updateConnectedView() }
+        socketThread?.start()
     }
 
     fun stopListen(view: View) {
         Toast.makeText(this, "stop", Toast.LENGTH_LONG).show()
+        socketThread?.interrupt() //TODO: temporary way to stop socket thread
     }
+
+    fun updateConnectedView() {
+        val view: TextView = findViewById(R.id.connected_counter)
+        view.text = getString(R.string.connected_counter, connectedDevices)
+    }
+
+
 }

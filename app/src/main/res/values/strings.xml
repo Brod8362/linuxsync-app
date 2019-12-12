@@ -25,4 +25,5 @@
     <string name="ip_address_text">IP: %1$s</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
+    <string name="connected_counter">Connected: %1$d</string>
 </resources>
