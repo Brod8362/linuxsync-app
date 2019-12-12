@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     fun writeToSocket(view: View) {
         val text: EditText = findViewById(R.id.send_buffer)
-        socketThread?.write(text.text.toString().toByteArray())
+        socketThread?.write((text.text.toString()+"\n").toByteArray())
     }
 
     fun updateConnectedView() {

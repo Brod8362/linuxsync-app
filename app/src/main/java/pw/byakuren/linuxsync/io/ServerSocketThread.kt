@@ -1,11 +1,13 @@
 package pw.byakuren.linuxsync.io
 
 import android.content.Context
+import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -32,7 +34,7 @@ class ServerSocketThread(val context: Context, port: Int) : Thread() {
 
     fun write(data: ByteArray) {
         try {
-            connectedSocket?.getOutputStream()?.write(data)
+            WriteSocket().execute(Pair(data, connectedSocket?.getOutputStream() as OutputStream))
         } catch (e: Exception) {
             Toast.makeText(context, "Could not send data", Toast.LENGTH_LONG).show()
             Log.e(TAG, "Could not send data", e)
@@ -56,3 +58,11 @@ class ServerSocketThread(val context: Context, port: Int) : Thread() {
     }
 
 }
+
+internal class WriteSocket : AsyncTask<Pair<ByteArray, OutputStream>, Void, Unit>() {
+    override fun doInBackground(vararg params: Pair<ByteArray, OutputStream>?) {
+        params[0]?.second?.write(params[0]?.first as ByteArray)
+    }
+}
+
+
