@@ -33,6 +33,8 @@ class MainActivity : AppCompatActivity() {
 
     private var connectedDevices = 0
 
+    private val listener = NotificationListener()
+
     private val TAG = "BYAKUREN_MAIN"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +43,8 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         createNotificationChannel()
-        val listener = NotificationListener()
+
+
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
         fab.setOnClickListener { view ->
@@ -93,11 +96,13 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "start", Toast.LENGTH_SHORT).show()
         try {
             socketThread = ServerSocketThread(this, 5000)
+
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG).show()
             Log.e(TAG, "BindException", e)
             return
         }
+        listener.socket = socketThread
         socketThread?.setConnectCallback { connectedDevices++; updateConnectedView() }
         socketThread?.setDisconnectCallback { connectedDevices--; updateConnectedView() }
         socketThread?.start()
