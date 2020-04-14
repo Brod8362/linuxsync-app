@@ -27,6 +27,10 @@ import java.net.BindException
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        var socketThread: ServerSocketThread? = null
+    }
+
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     private var socketThread: ServerSocketThread? = null
@@ -93,23 +97,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startListen(view: View) {
-        Toast.makeText(this, "start", Toast.LENGTH_SHORT).show()
         try {
             socketThread = ServerSocketThread(this, 5000)
-
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG).show()
             Log.e(TAG, "BindException", e)
             return
         }
-        listener.socket = socketThread
+        MainActivity.socketThread = this.socketThread
         socketThread?.setConnectCallback { connectedDevices++; updateConnectedView() }
         socketThread?.setDisconnectCallback { connectedDevices--; updateConnectedView() }
         socketThread?.start()
     }
 
     fun stopListen(view: View) {
-        Toast.makeText(this, "stop", Toast.LENGTH_SHORT).show()
         socketThread?.interrupt() //TODO: temporary way to stop socket thread
     }
 

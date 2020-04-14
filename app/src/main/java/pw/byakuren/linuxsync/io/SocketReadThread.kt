@@ -1,6 +1,5 @@
 package pw.byakuren.linuxsync.io
 
-import android.util.Log
 import java.io.DataInputStream
 
 class SocketReadThread(val stream: DataInputStream) : Thread() {
@@ -11,15 +10,10 @@ class SocketReadThread(val stream: DataInputStream) : Thread() {
 
     @ExperimentalStdlibApi
     override fun run() {
-
         var len: Int
-
         do {
             len = stream.read(buffer)
-            Log.d(TAG, buffer.decodeToString().substring(0, len))
         } while (len > 0)
-
-
     }
 
     override fun interrupt() {

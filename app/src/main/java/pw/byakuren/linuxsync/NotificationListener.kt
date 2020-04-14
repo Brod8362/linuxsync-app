@@ -14,12 +14,29 @@ class NotificationListener : NotificationListenerService() {
     var socket: ServerSocketThread? = null
     var TAG = "BYAKUREN_NLISTENER"
 
+    fun connectedCallback(st: ServerSocketThread) {
+        socket = st
+        Log.d(TAG, "Set socket in listener")
+    }
+
+    fun disconnectedCallback() {
+        Log.d(TAG, "Unset socket in listener")
+    }
+
     override fun onListenerConnected() {
         super.onListenerConnected()
-        Toast.makeText(this, "Listener connected", Toast.LENGTH_SHORT).show()
+        Log.d(TAG, "Listener connected")
     }
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
+        if (socket == null) {
+            if (MainActivity.socketThread != null) {
+                this.socket = MainActivity.socketThread
+            } else {
+                return
+            }
+        }
+        Log.d(TAG, "Caught notification")
         val map = mutableMapOf<SegmentType, String>()
         val data = arrayListOf<Byte>()
 
@@ -28,6 +45,7 @@ class NotificationListener : NotificationListenerService() {
         var extra: String = bundle?.get("android.text").toString()
         map.put(SegmentType.Title, title)
         map.put(SegmentType.Body, extra)
+        Log.d(TAG, "Received notification data")
 
         //first byte must be 0x3C, to distinguish garbage
         data.add(0x3C)
@@ -46,6 +64,12 @@ class NotificationListener : NotificationListenerService() {
         //last byte must be 0x7F
         data.add(0x7F)
 
+        Log.d(TAG, "Crafted notification packet")
+
         socket?.write(data.toByteArray())
+        if (socket == null) {
+            Log.d(TAG, "Socket does not exist.")
+        }
+        Log.d(TAG,"Sent buffer size "+data.size+" over socket")
     }
 }
