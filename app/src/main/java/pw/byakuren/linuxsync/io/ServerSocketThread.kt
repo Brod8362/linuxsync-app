@@ -21,6 +21,7 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
     private var serverSocket: ServerSocket = ServerSocket(port)
     private var connectedSocket: Socket? = null
     private var readThread: SocketReadThread? = null
+    private var heartbeat: HeartbeatThread? = null
     private var connectCallback: ((ServerSocketThread)->Unit)? = null
     private var disconnectCallback: (()->Unit)? = null
 
@@ -48,6 +49,9 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
             readThread = SocketReadThread(DataInputStream(
                 BufferedInputStream(connectedSocket?.getInputStream() as InputStream)))
             readThread?.start()
+            heartbeat = HeartbeatThread(this)
+            heartbeat?.start()
+
         } else {
             //declined connection
             Log.d(TAG, "Declined connection from ${addrString}")
@@ -56,6 +60,7 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
             sleep(3000)
             connectedSocket?.close()
             connectedSocket = null
+            heartbeat = null
         }
     }
 
@@ -87,6 +92,10 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
 
     fun setDisconnectCallback(callback: ()->Unit) {
         disconnectCallback=callback
+    }
+
+    fun isClosed(): Boolean {
+        return serverSocket.isClosed
     }
 
 }
