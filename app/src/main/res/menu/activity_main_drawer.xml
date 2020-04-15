@@ -16,18 +16,18 @@
             android:id="@+id/nav_connection"
             android:icon="@drawable/ic_menu_connection"
             android:title="@string/menu_connection" />
-        <item
-            android:id="@+id/nav_tools"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="@string/menu_tools" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/action_settings">
         <menu>
             <item
                 android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
+                android:icon="@android:drawable/ic_secure"
                 android:title="@string/menu_share" />
+            <item
+                android:id="@+id/nav_tools"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="@string/menu_tools" />
             <item
                 android:id="@+id/nav_send"
                 android:icon="@drawable/ic_menu_send"

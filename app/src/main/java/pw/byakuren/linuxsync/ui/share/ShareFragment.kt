@@ -1,13 +1,19 @@
 package pw.byakuren.linuxsync.ui.share
 
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import pw.byakuren.linuxsync.R
 
 class ShareFragment : Fragment() {
@@ -22,10 +28,24 @@ class ShareFragment : Fragment() {
         shareViewModel =
             ViewModelProviders.of(this).get(ShareViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_share, container, false)
-        val textView: TextView = root.findViewById(R.id.text_share)
-        shareViewModel.text.observe(this, Observer {
-            textView.text = it
-        })
+        val prefs = this.activity?.getPreferences(MODE_PRIVATE)
+        if (prefs != null)
+            populateRecycler(prefs, root)
         return root
     }
+
+
+    fun populateRecycler(sharedPreferences: SharedPreferences, view: View) {
+
+        val ipList: Array<String> = sharedPreferences.all.keys.toTypedArray()
+        val dateList: Array<String> = sharedPreferences.all.values.map { a -> a.toString() }.toTypedArray()
+
+        val linearLayoutManager = LinearLayoutManager(view.context)
+        val recyclerView: RecyclerView = view.findViewById(R.id.deviceRecyclerView)
+        val adapter = DeviceAdapter(ipList, dateList, sharedPreferences)
+
+        recyclerView.layoutManager = linearLayoutManager
+        recyclerView.adapter = adapter
+    }
+
 }

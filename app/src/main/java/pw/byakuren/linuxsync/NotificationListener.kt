@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -47,11 +48,14 @@ class NotificationListener : NotificationListenerService() {
         val map = mutableMapOf<SegmentType, String>()
         val data = arrayListOf<Byte>()
 
-        var bundle = notif?.notification?.extras
-        var title: String = bundle?.get("android.title").toString()
-        var extra: String = bundle?.get("android.text").toString()
+        val bundle = notif?.notification?.extras
+        val title: String = bundle?.get("android.title").toString()
+        val extra: String = bundle?.get("android.text").toString()
+        val subtext: String = bundle?.get("android.subtext").toString()
+        val appinfo: ApplicationInfo = bundle?.get("android.appInfo") as ApplicationInfo
         map.put(SegmentType.Title, title)
         map.put(SegmentType.Body, extra)
+        map.put(SegmentType.AppName, appinfo.packageName)
 
         //first byte must be 0x3C, to distinguish garbage
         data.add(0x3C)
