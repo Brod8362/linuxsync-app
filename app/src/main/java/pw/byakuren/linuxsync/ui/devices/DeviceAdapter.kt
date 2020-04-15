@@ -1,4 +1,4 @@
-package pw.byakuren.linuxsync.ui.share
+package pw.byakuren.linuxsync.ui.devices
 
 import android.content.SharedPreferences
 import android.view.LayoutInflater

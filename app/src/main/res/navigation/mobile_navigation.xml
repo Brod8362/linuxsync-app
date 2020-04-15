@@ -12,12 +12,6 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_test"
-        android:name="pw.byakuren.linuxsync.ui.notiftest.NotificationTestFragment"
-        android:label="@string/menu_test"
-        tools:layout="@layout/fragment_test" />
-
-    <fragment
         android:id="@+id/nav_connection"
         android:name="pw.byakuren.linuxsync.ui.connection.ConnectionFragment"
         android:label="@string/menu_connection"
@@ -31,7 +25,7 @@
 
     <fragment
         android:id="@+id/nav_share"
-        android:name="pw.byakuren.linuxsync.ui.share.ShareFragment"
+        android:name="pw.byakuren.linuxsync.ui.devices.ShareFragment"
         android:label="@string/menu_share"
         tools:layout="@layout/fragment_share" />
 

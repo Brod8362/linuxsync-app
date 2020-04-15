@@ -1,4 +1,4 @@
-package pw.byakuren.linuxsync.ui.share
+package pw.byakuren.linuxsync.ui.devices
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

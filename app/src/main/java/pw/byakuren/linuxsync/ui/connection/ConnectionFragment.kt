@@ -8,10 +8,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.Switch
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import pw.byakuren.linuxsync.MainActivity
 import pw.byakuren.linuxsync.R
 
 
@@ -27,17 +27,15 @@ class ConnectionFragment : Fragment() {
         connectionViewModel =
             ViewModelProviders.of(this).get(ConnectionViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_connection, container, false)
-        val ipView: TextView = root.findViewById(R.id.ipview)
+        val switch: Switch = root.findViewById(R.id.master_toggle)
         val ipText = getIpAddressString()
-        ipView.text = getString(R.string.ip_address_text, ipText)
+        switch.text = getString(R.string.ip_address_text, ipText)
         if (!affiliatedWithNetwork()) {
-            val startButton: Button = root.findViewById(R.id.start)
-            val stopButton: Button = root.findViewById(R.id.stop)
-            startButton.isEnabled = false
-            stopButton.isEnabled = false
+            switch.isEnabled = false
+            switch.isChecked = false
+        } else {
+            switch.isChecked = MainActivity.socketThread!=null
         }
-
-
         return root
     }
 

@@ -1,13 +1,18 @@
 package pw.byakuren.linuxsync
 
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.EditText
+import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -24,6 +29,7 @@ import com.google.android.material.navigation.NavigationView
 import pw.byakuren.linuxsync.io.ServerSocketThread
 import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.net.BindException
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,12 +64,28 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_test, R.id.nav_connection,
+                R.id.nav_home, R.id.nav_connection,
                 R.id.nav_tools, R.id.nav_share, R.id.nav_send
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        if (!Settings.Secure.getString(this.contentResolver, "enabled_notification_listeners")
+                .contains(applicationContext.packageName)
+        ) {
+            //check if has permission to use notification listener
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            builder.setMessage("You need to give the application notification permission.")
+                .setCancelable(false)
+                .setPositiveButton("OK") { dialog, id ->
+                    //pass in a random view because, bad code but w/e
+                   openNotificationSettings(navView)
+                }
+            val alert: AlertDialog = builder.create()
+            alert.show()
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -90,10 +112,20 @@ class MainActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
+    fun switchToggle(view: View) {
+        val switch = view as Switch
+        if (switch.isChecked) {
+            startListen(view)
+        } else {
+            stopListen(view)
+        }
+    }
+
     fun startListen(view: View) {
         try {
-            socketThread = ServerSocketThread(this, 5000, getPreferences(Context.MODE_PRIVATE)
-            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName)}
+            socketThread = ServerSocketThread(
+                this, 5000, getPreferences(Context.MODE_PRIVATE)
+            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
                 .show()
@@ -109,12 +141,19 @@ class MainActivity : AppCompatActivity() {
     fun stopListen(view: View) {
         socketThread?.interrupt() //TODO: temporary way to stop socket thread
         socketThread = null
-        MainActivity.socketThread=null
+        MainActivity.socketThread = null
     }
 
     fun writeToSocket(view: View) {
         val text: EditText = findViewById(R.id.send_buffer)
         socketThread?.write((text.text.toString() + "\n").toByteArray())
+    }
+
+    fun openNotificationSettings(view: View) {
+        applicationContext.startActivity(
+            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        );
     }
 
     fun updateConnectedView() {
@@ -125,7 +164,8 @@ class MainActivity : AppCompatActivity() {
     fun showAcceptDialog(addr: String, hostname: String): Boolean {
         val dialog = ConnectionAcceptDialog(addr, hostname)
         dialog.show(this.supportFragmentManager, "BYAKUREN_DIALOG")
-        while (!dialog.completed) {}
+        while (!dialog.completed) {
+        }
         return dialog.res
     }
 
