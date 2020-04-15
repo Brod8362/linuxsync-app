@@ -4,14 +4,19 @@ import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
+import androidx.navigation.Navigation.findNavController
+import kotlinx.android.synthetic.main.content_main.*
+import pw.byakuren.linuxsync.R
+import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
 
-class ServerSocketThread(val context: Context, port: Int) : Thread() {
+class ServerSocketThread(val context: Context, port: Int, val dialogCallback: ((InetAddress) -> Boolean)) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
     private var connectedSocket: Socket? = null
@@ -19,17 +24,27 @@ class ServerSocketThread(val context: Context, port: Int) : Thread() {
     private var connectCallback: ((ServerSocketThread)->Unit)? = null
     private var disconnectCallback: (()->Unit)? = null
 
+
     private val TAG = "BYAKUREN_SOCKET"
 
     override fun run() {
         Log.d(TAG, "Waiting for socket connections...")
-        connectedSocket = serverSocket.accept()
-        Log.d(TAG, "Accepted socket connection from ${connectedSocket?.inetAddress.toString()}")
-        connectCallback?.invoke(this)
-        connectedSocket?.getOutputStream()?.write(connect_packet())
-        readThread = SocketReadThread(DataInputStream(
-            BufferedInputStream(connectedSocket?.getInputStream() as InputStream)))
-        readThread?.start()
+        val tempSocket = serverSocket.accept()
+        if (dialogCallback.invoke(tempSocket.inetAddress)) {
+            connectedSocket = tempSocket
+            Log.d(TAG, "Accepted socket connection from ${connectedSocket?.inetAddress.toString()}")
+            connectCallback?.invoke(this)
+            readThread = SocketReadThread(DataInputStream(
+                BufferedInputStream(connectedSocket?.getInputStream() as InputStream)))
+            readThread?.start()
+        } else {
+            //declined connection
+            Log.d(TAG, "Declined connection from ${tempSocket?.inetAddress.toString()}")
+            connectedSocket?.shutdownInput()
+            connectedSocket?.shutdownOutput()
+            connectedSocket?.close()
+            connectedSocket = null
+        }
     }
 
     fun write(data: ByteArray) {
@@ -39,21 +54,6 @@ class ServerSocketThread(val context: Context, port: Int) : Thread() {
             Toast.makeText(context, "Could not send data", Toast.LENGTH_LONG).show()
             Log.e(TAG, "Could not send data", e)
         }
-    }
-
-    private fun connect_packet(): ByteArray {
-        val data = arrayListOf<Byte>()
-        data.add(0x3C)
-        data.add(0x01)
-        data.add(SegmentType.Title.header)
-        val str = "Connection established"
-        data.add(str.length.toByte())
-        data.addAll(str.toByteArray().toList())
-        data.add(SegmentType.Body.header)
-        data.add(str.length.toByte())
-        data.addAll(str.toByteArray().toList())
-        data.add(SegmentType.End.header)
-        return data.toByteArray()
     }
 
     override fun interrupt() {

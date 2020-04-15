@@ -3,27 +3,27 @@ package pw.byakuren.linuxsync
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
+import android.view.Menu
+import android.view.View
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import android.view.Menu
-import android.view.View
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import pw.byakuren.linuxsync.io.ServerSocketThread
+import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.net.BindException
+import java.net.InetAddress
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,7 +47,6 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         createNotificationChannel()
-
 
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
@@ -82,25 +81,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("sync_test_channel", name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+        val name = getString(R.string.channel_name)
+        val descriptionText = getString(R.string.channel_description)
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel("sync_test_channel", name, importance).apply {
+            description = descriptionText
         }
+        // Register the channel with the system
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun startListen(view: View) {
         try {
-            socketThread = ServerSocketThread(this, 5000)
+            socketThread = ServerSocketThread(this, 5000, { a -> showAcceptDialog(a.toString(), a.hostName)})
         } catch (e: BindException) {
-            Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
+                .show()
             Log.e(TAG, "BindException", e)
             return
         }
@@ -112,11 +110,12 @@ class MainActivity : AppCompatActivity() {
 
     fun stopListen(view: View) {
         socketThread?.interrupt() //TODO: temporary way to stop socket thread
+        socketThread = null
     }
 
     fun writeToSocket(view: View) {
         val text: EditText = findViewById(R.id.send_buffer)
-        socketThread?.write((text.text.toString()+"\n").toByteArray())
+        socketThread?.write((text.text.toString() + "\n").toByteArray())
     }
 
     fun updateConnectedView() {
@@ -124,5 +123,10 @@ class MainActivity : AppCompatActivity() {
 //        view.text = getString(R.string.connected_counter, connectedDevices)
     }
 
-
+    fun showAcceptDialog(addr: String, hostname: String): Boolean {
+        val dialog = ConnectionAcceptDialog(addr, hostname)
+        dialog.show(this.supportFragmentManager, "BYAKUREN_DIALOG")
+        while (!dialog.completed) {}
+        return dialog.res
+    }
 }
