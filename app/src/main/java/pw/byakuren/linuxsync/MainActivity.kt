@@ -37,8 +37,6 @@ class MainActivity : AppCompatActivity() {
 
     private var connectedDevices = 0
 
-    private val listener = NotificationListener()
-
     private val TAG = "BYAKUREN_MAIN"
 
     override fun onCreate(savedInstanceState: Bundle?) {

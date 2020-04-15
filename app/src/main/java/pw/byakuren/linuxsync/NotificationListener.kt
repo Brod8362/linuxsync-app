@@ -18,12 +18,12 @@ class NotificationListener : NotificationListenerService() {
 
     val NOTIFICATION_ID: Int = 85094321
 
-    var socket: ServerSocketThread? = null
     var TAG = "BYAKUREN_NLISTENER"
 
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+
         Log.d(TAG, "Listener connected")
         createNotificationChannel()
 
@@ -37,12 +37,8 @@ class NotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
-        if (socket == null) {
-            if (MainActivity.socketThread != null) {
-                this.socket = MainActivity.socketThread
-            } else {
-                return
-            }
+        if (MainActivity.socketThread == null) {
+            return
         }
         Log.d(TAG, "Caught notification")
         val map = mutableMapOf<SegmentType, String>()
@@ -76,11 +72,8 @@ class NotificationListener : NotificationListenerService() {
 
         Log.d(TAG, "Crafted notification packet")
 
-        socket?.write(data.toByteArray())
-        if (socket == null) {
-            Log.d(TAG, "Socket does not exist.")
-        }
-        Log.d(TAG,"Sent buffer size "+data.size+" over socket")
+        MainActivity.socketThread?.write(data.toByteArray())
+        Log.d(TAG, "Sent buffer size " + data.size + " over socket")
     }
 
     private fun createNotificationChannel() {
