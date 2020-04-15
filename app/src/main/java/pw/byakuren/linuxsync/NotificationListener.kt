@@ -17,7 +17,6 @@ class NotificationListener : NotificationListenerService() {
 
     val NOTIFICATION_ID: Int = 85094321
 
-
     var socket: ServerSocketThread? = null
     var TAG = "BYAKUREN_NLISTENER"
 

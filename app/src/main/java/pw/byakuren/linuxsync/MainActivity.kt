@@ -11,6 +11,8 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -19,11 +21,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
 import pw.byakuren.linuxsync.io.ServerSocketThread
 import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.net.BindException
-import java.net.InetAddress
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,8 +51,7 @@ class MainActivity : AppCompatActivity() {
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            sendTestNotification(view)
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navView: NavigationView = findViewById(R.id.nav_view)
@@ -95,7 +94,8 @@ class MainActivity : AppCompatActivity() {
 
     fun startListen(view: View) {
         try {
-            socketThread = ServerSocketThread(this, 5000, { a -> showAcceptDialog(a.toString(), a.hostName)})
+            socketThread = ServerSocketThread(this, 5000, getPreferences(Context.MODE_PRIVATE)
+            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName)}
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
                 .show()
@@ -111,6 +111,7 @@ class MainActivity : AppCompatActivity() {
     fun stopListen(view: View) {
         socketThread?.interrupt() //TODO: temporary way to stop socket thread
         socketThread = null
+        MainActivity.socketThread=null
     }
 
     fun writeToSocket(view: View) {
@@ -128,5 +129,16 @@ class MainActivity : AppCompatActivity() {
         dialog.show(this.supportFragmentManager, "BYAKUREN_DIALOG")
         while (!dialog.completed) {}
         return dialog.res
+    }
+
+    fun sendTestNotification(view: View) {
+        val nbuilder = NotificationCompat.Builder(view.context, "sync_test_channel")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Title")
+            .setContentText("Content")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        with(NotificationManagerCompat.from(view.context)) {
+            notify(0, nbuilder.build())
+        }
     }
 }
