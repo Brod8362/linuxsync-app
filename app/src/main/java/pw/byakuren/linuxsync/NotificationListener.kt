@@ -8,11 +8,14 @@ import android.content.pm.ApplicationInfo
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.byakuren.linuxsync.io.SegmentType
 import pw.byakuren.linuxsync.io.ServerSocketThread
+import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
+import java.net.BindException
 
 class NotificationListener : NotificationListenerService() {
 
@@ -23,7 +26,7 @@ class NotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
-
+        MainActivity.notificationListener = this
         Log.d(TAG, "Listener connected")
         createNotificationChannel()
 
@@ -89,4 +92,32 @@ class NotificationListener : NotificationListenerService() {
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
+
+    fun startListen() {
+        try {
+            MainActivity.socketThread = ServerSocketThread(
+                this, 5000, this.baseContext.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE)
+            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
+        } catch (e: BindException) {
+            Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
+                .show()
+            Log.e(TAG, "BindException", e)
+            return
+        }
+        MainActivity.socketThread?.start()
+    }
+
+    fun stopListen() {
+        MainActivity.socketThread?.interrupt() //TODO: temporary way to stop socket thread
+        Thread.sleep(5000) //wait to ensure the socket is fully closed and done
+        MainActivity.socketThread = null
+    }
+
+    fun showAcceptDialog(addr: String, hostname: String): Boolean {
+        val dialog = ConnectionAcceptDialog(addr, hostname)
+        MainActivity.fragmentManager?.let { dialog.show(it, "BYAKUREN_DIALOG") }
+        while (!dialog.completed) { /* just waiting for it to complete */ }
+        return dialog.res
+    }
+
 }

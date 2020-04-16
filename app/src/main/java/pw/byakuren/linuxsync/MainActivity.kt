@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -35,13 +36,13 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         var socketThread: ServerSocketThread? = null
+        var notificationListener: NotificationListener? = null
+        var fragmentManager: FragmentManager? = null
     }
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     private var socketThread: ServerSocketThread? = null
-
-    private var connectedDevices = 0
 
     private val TAG = "BYAKUREN_MAIN"
 
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         createNotificationChannel()
+        MainActivity.fragmentManager = this.supportFragmentManager
 
 
         val fab: FloatingActionButton = findViewById(R.id.fab)
@@ -115,33 +117,24 @@ class MainActivity : AppCompatActivity() {
     fun switchToggle(view: View) {
         val switch = view as Switch
         if (switch.isChecked) {
-            startListen(view)
+            startListen()
         } else {
-            stopListen(view)
+            stopListen()
         }
     }
 
-    fun startListen(view: View) {
-        try {
-            socketThread = ServerSocketThread(
-                this, 5000, getPreferences(Context.MODE_PRIVATE)
-            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
-        } catch (e: BindException) {
-            Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
-                .show()
-            Log.e(TAG, "BindException", e)
-            return
+    fun startListen() {
+        Log.d(TAG, "Enable client connections")
+        if (notificationListener != null) {
+            notificationListener?.startListen()
+        } else {
+            Toast.makeText(this, "You need to give the notification permission.", Toast.LENGTH_LONG).show()
         }
-        MainActivity.socketThread = this.socketThread
-        socketThread?.setConnectCallback { connectedDevices++; updateConnectedView() }
-        socketThread?.setDisconnectCallback { connectedDevices--; updateConnectedView() }
-        socketThread?.start()
     }
 
-    fun stopListen(view: View) {
-        socketThread?.interrupt() //TODO: temporary way to stop socket thread
-        socketThread = null
-        MainActivity.socketThread = null
+    fun stopListen() {
+        Log.d(TAG, "Disable client connections")
+        notificationListener?.stopListen()
     }
 
     fun writeToSocket(view: View) {

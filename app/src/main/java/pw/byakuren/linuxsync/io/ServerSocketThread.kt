@@ -15,6 +15,7 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 class ServerSocketThread(
     val context: Context, port: Int, val sharedPreferences: SharedPreferences,
@@ -27,6 +28,7 @@ class ServerSocketThread(
     private var heartbeat: HeartbeatThread? = null
     private var connectCallback: ((ServerSocketThread) -> Unit)? = null
     private var disconnectCallback: (() -> Unit)? = null
+    private var connectedTime: LocalDateTime? = null
 
 
     private val TAG = "BYAKUREN_SOCKET"
@@ -37,13 +39,14 @@ class ServerSocketThread(
         val tempSocket = try {
             serverSocket.accept()
         } catch (e: SocketException) {
-            Log.e("socket closed while accept")
-        }
+            Log.e(TAG, "socket closed while accept")
+            null
+        } ?: return //this returns if the obj is null
+
         val addrString = tempSocket.inetAddress.toString()
         if (sharedPreferences.contains(addrString) ||
             dialogCallback.invoke(tempSocket.inetAddress)
         ) {
-
             if (!sharedPreferences.contains(addrString)) {
                 val editor = sharedPreferences.edit()
                 editor.putString(addrString, LocalDateTime.now().toString())
@@ -53,6 +56,7 @@ class ServerSocketThread(
 
             connectedSocket = tempSocket
             Log.d(TAG, "Accepted socket connection from ${addrString}")
+            connectedTime = LocalDateTime.now()
             connectCallback?.invoke(this)
             connectedSocket?.soTimeout = 20000
             readThread = SocketReadThread(
@@ -111,6 +115,30 @@ class ServerSocketThread(
 
     fun isClosed(): Boolean {
         return serverSocket.isClosed
+    }
+
+    fun isConnected(): Boolean {
+        return connectedSocket != null && connectedSocket!!.isConnected
+    }
+
+    fun connectedHostname(): String? {
+        if (connectedSocket == null) {
+            return null;
+        } else {
+            return connectedSocket!!.inetAddress.canonicalHostName
+        }
+    }
+
+    fun connectedTime(): LocalDateTime? {
+        return connectedTime
+    }
+
+    fun connectedElapsedTime(): Int {
+        if (connectedTime == null) {
+            return 0;
+        } else {
+            return ChronoUnit.SECONDS.between(LocalDateTime.now(), connectedTime).toInt()
+        }
     }
 
 }
