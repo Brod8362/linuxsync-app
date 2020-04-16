@@ -35,6 +35,12 @@
     <string name="disconnected">Disconnected</string>
     <string name="searching">Searching</string>
 
+    <string name="enable_connections">Enable Connections</string>
+    <string name="enable_connections_description">Enable devices to connect to your phone and receive notifications.
+    Only one device can be connected at a time.</string>
+    <string name="enable_automatic_connections">Enable Automatic Connections</string>
+    <string name="enable_automatic_connections_description">Automatically allow connections when the app starts in the background.</string>
+
     <string name="remove">Remove</string>
     <string name="device_list">Trusted Device List</string>
     <string name="test_button">Send Test Notification</string>
@@ -49,4 +55,9 @@
     <string name="connected_counter">Connected: %1$d</string>
     <string name="hint_input_buffer">Data to send</string>
     <string name="Send">Send</string>
+
+    <string name="prefs_trusted_devices">trusted_devices</string>
+    <string name="prefs_settings">settings</string>
+
+    <string name="setting_automatic_connections">automatic_connections_enabled</string>
 </resources>

@@ -20,7 +20,7 @@ import java.net.SocketException
 
 class NotificationListener : NotificationListenerService() {
 
-    val NOTIFICATION_ID: Int = 85094321
+    private val NOTIFICATION_ID: Int = 85094321
 
     var TAG = "BYAKUREN_NLISTENER"
 
@@ -38,6 +38,11 @@ class NotificationListener : NotificationListenerService() {
             .setTicker("LinuxSync is running")
             .build()
         startForeground(NOTIFICATION_ID, notification)
+
+        val settings = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        if (settings.getBoolean(getString(R.string.setting_automatic_connections), false)) {
+            startListen()
+        }
     }
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
@@ -102,7 +107,10 @@ class NotificationListener : NotificationListenerService() {
     fun startListen() {
         try {
             MainActivity.socketThread = ServerSocketThread(
-                this, 5000, this.baseContext.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE)
+                this, 5000, this.baseContext.getSharedPreferences(
+                    getString(R.string.prefs_trusted_devices),
+                    Context.MODE_PRIVATE
+                )
             ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
             MainActivity.socketThread!!.setDisconnectCallback { stopListen(); startListen() }
         } catch (e: BindException) {
@@ -123,7 +131,8 @@ class NotificationListener : NotificationListenerService() {
     fun showAcceptDialog(addr: String, hostname: String): Boolean {
         val dialog = ConnectionAcceptDialog(addr, hostname)
         MainActivity.fragmentManager?.let { dialog.show(it, "BYAKUREN_DIALOG") }
-        while (!dialog.completed) { /* just waiting for it to complete */ }
+        while (!dialog.completed) { /* just waiting for it to complete */
+        }
         return dialog.res
     }
 

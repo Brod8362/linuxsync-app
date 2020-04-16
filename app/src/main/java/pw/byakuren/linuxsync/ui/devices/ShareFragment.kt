@@ -24,7 +24,7 @@ class ShareFragment : Fragment() {
         shareViewModel =
             ViewModelProviders.of(this).get(ShareViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_share, container, false)
-        val prefs = this.activity?.getPreferences(MODE_PRIVATE)
+        val prefs = this.activity?.getSharedPreferences(getString(R.string.prefs_trusted_devices), MODE_PRIVATE)
         if (prefs != null)
             populateRecycler(prefs, root)
         return root
@@ -32,7 +32,6 @@ class ShareFragment : Fragment() {
 
 
     fun populateRecycler(sharedPreferences: SharedPreferences, view: View) {
-
         val ipList: Array<String> = sharedPreferences.all.keys.toTypedArray()
         val dateList: Array<String> = sharedPreferences.all.values.map { a -> a.toString() }.toTypedArray()
 

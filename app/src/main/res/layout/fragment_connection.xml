@@ -8,45 +8,112 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <Switch
-            android:id="@+id/master_toggle"
-            android:text="@string/ip_address_text"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:foregroundGravity="fill_horizontal"
-            android:layout_gravity="fill_horizontal"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:onClick="switchToggle" />
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp">
 
-        <LinearLayout
-            android:orientation="horizontal"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="8dp"
+                android:layout_marginHorizontal="8dp">
+
+                <Switch
+                    android:id="@+id/master_toggle"
+                    android:text="@string/enable_connections"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:foregroundGravity="fill_horizontal"
+                    android:layout_gravity="fill_horizontal"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:onClick="masterSwitchToggle"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="0dp" />
+
+                <TextView
+                    android:text="@string/enable_connections_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="0dp"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
 
-            <EditText
-                android:id="@+id/send_buffer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                android:ems="10"
-                android:hint="@string/hint_input_buffer"
-                android:inputType="textPersonName"
-                android:text="test"
-                android:importantForAutofill="no" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center|center_vertical"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginVertical="8dp">
 
-            <Button
-                android:id="@+id/buffer_send_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="40dp"
-                android:onClick="writeToSocket"
-                android:text="@string/Send" />
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/ip_text"
+                    android:text="@string/ip_address_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="8dp" />
+            </LinearLayout>
 
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginVertical="8dp">
+
+                <Switch
+                    android:id="@+id/autoconnect_switch"
+                    android:text="@string/enable_automatic_connections"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_gravity="fill_horizontal"
+                    android:foregroundGravity="fill_horizontal"
+                    android:onClick="automaticSwitchToggle" />
+
+                <TextView
+                    android:id="@+id/textView6"
+                    android:text="@string/enable_automatic_connections_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

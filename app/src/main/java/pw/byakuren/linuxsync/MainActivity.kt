@@ -42,8 +42,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
-    private var socketThread: ServerSocketThread? = null
-
     private val TAG = "BYAKUREN_MAIN"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,13 +112,21 @@ class MainActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun switchToggle(view: View) {
+    fun masterSwitchToggle(view: View) {
         val switch = view as Switch
         if (switch.isChecked) {
             startListen()
         } else {
             stopListen()
         }
+    }
+
+    fun automaticSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_automatic_connections), switch.isChecked)
+        editor.apply()
     }
 
     fun startListen() {
@@ -135,11 +141,6 @@ class MainActivity : AppCompatActivity() {
     fun stopListen() {
         Log.d(TAG, "Disable client connections")
         notificationListener?.stopListen()
-    }
-
-    fun writeToSocket(view: View) {
-        val text: EditText = findViewById(R.id.send_buffer)
-        socketThread?.write((text.text.toString() + "\n").toByteArray())
     }
 
     fun openNotificationSettings(view: View) {
