@@ -13,17 +13,20 @@ import java.io.OutputStream
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 import java.time.LocalDateTime
 
-class ServerSocketThread(val context: Context, port: Int, val sharedPreferences: SharedPreferences,
-                         val dialogCallback: ((InetAddress) -> Boolean)) : Thread() {
+class ServerSocketThread(
+    val context: Context, port: Int, val sharedPreferences: SharedPreferences,
+    val dialogCallback: ((InetAddress) -> Boolean)
+) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
     private var connectedSocket: Socket? = null
     private var readThread: SocketReadThread? = null
     private var heartbeat: HeartbeatThread? = null
-    private var connectCallback: ((ServerSocketThread)->Unit)? = null
-    private var disconnectCallback: (()->Unit)? = null
+    private var connectCallback: ((ServerSocketThread) -> Unit)? = null
+    private var disconnectCallback: (() -> Unit)? = null
 
 
     private val TAG = "BYAKUREN_SOCKET"
@@ -31,23 +34,32 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
     @SuppressLint("ApplySharedPref") //this ignores the warning on "editor.commit()"
     override fun run() {
         Log.d(TAG, "Waiting for socket connections...")
-        val tempSocket = serverSocket.accept()
+        val tempSocket = try {
+            serverSocket.accept()
+        } catch (e: SocketException) {
+            Log.e("socket closed while accept")
+        }
         val addrString = tempSocket.inetAddress.toString()
         if (sharedPreferences.contains(addrString) ||
-            dialogCallback.invoke(tempSocket.inetAddress)) {
+            dialogCallback.invoke(tempSocket.inetAddress)
+        ) {
 
             if (!sharedPreferences.contains(addrString)) {
                 val editor = sharedPreferences.edit()
                 editor.putString(addrString, LocalDateTime.now().toString())
                 editor.commit()
-                Log.d(TAG, "Added "+tempSocket.inetAddress.toString()+" to trusted addresses")
+                Log.d(TAG, "Added " + tempSocket.inetAddress.toString() + " to trusted addresses")
             }
 
             connectedSocket = tempSocket
             Log.d(TAG, "Accepted socket connection from ${addrString}")
             connectCallback?.invoke(this)
-            readThread = SocketReadThread(DataInputStream(
-                BufferedInputStream(connectedSocket?.getInputStream() as InputStream)))
+            connectedSocket?.soTimeout = 20000
+            readThread = SocketReadThread(
+                DataInputStream(
+                    BufferedInputStream(connectedSocket?.getInputStream() as InputStream)
+                )
+            )
             readThread?.start()
             heartbeat = HeartbeatThread(this)
             heartbeat?.start()
@@ -67,11 +79,14 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
     fun write(data: ByteArray) {
         try {
             WriteSocket().execute(Pair(data, connectedSocket?.getOutputStream() as OutputStream))
+        } catch (e: TypeCastException) {
+            Log.e(TAG, "failed to send notification, socket is probably not connected")
         } catch (e: Exception) {
             Toast.makeText(context, "Could not send data", Toast.LENGTH_LONG).show()
             Log.e(TAG, "Could not send data", e)
         }
     }
+
 
     fun close() {
         write(byteArrayOf(0x7F, 0x7F))
@@ -86,12 +101,12 @@ class ServerSocketThread(val context: Context, port: Int, val sharedPreferences:
         readThread?.interrupt()
     }
 
-    fun setConnectCallback(callback: (ServerSocketThread)->Unit) {
-        connectCallback=callback
+    fun setConnectCallback(callback: (ServerSocketThread) -> Unit) {
+        connectCallback = callback
     }
 
-    fun setDisconnectCallback(callback: ()->Unit) {
-        disconnectCallback=callback
+    fun setDisconnectCallback(callback: () -> Unit) {
+        disconnectCallback = callback
     }
 
     fun isClosed(): Boolean {
