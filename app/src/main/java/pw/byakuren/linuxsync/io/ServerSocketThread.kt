@@ -32,7 +32,6 @@ class ServerSocketThread(
     private var connectedHostname: String? = null
     private var connectedTime: LocalDateTime? = null
 
-
     private val TAG = "BYAKUREN_SOCKET"
 
     @SuppressLint("ApplySharedPref") //this ignores the warning on "editor.commit()"
@@ -72,7 +71,6 @@ class ServerSocketThread(
             readThread?.start()
             heartbeat = HeartbeatThread(this)
             heartbeat?.start()
-
         } else {
             //declined connection
             Log.d(TAG, "Declined connection from ${addrString}")
@@ -87,7 +85,9 @@ class ServerSocketThread(
 
     fun write(data: ByteArray) {
         try {
-            WriteSocket().execute(Pair(data, connectedSocket?.getOutputStream() as OutputStream))
+            WriteSocket {
+                disconnectCallback?.invoke()
+            }.execute(Pair(data, connectedSocket?.getOutputStream() as OutputStream))
         } catch (e: TypeCastException) {
             Log.e(TAG, "failed to send notification, socket is probably not connected")
         } catch (e: Exception) {
@@ -127,7 +127,7 @@ class ServerSocketThread(
     }
 
     fun connectedHostname(): String? {
-       return connectedHostname
+        return connectedHostname
     }
 
     fun connectedTime(): LocalDateTime? {
@@ -144,9 +144,14 @@ class ServerSocketThread(
 
 }
 
-internal class WriteSocket : AsyncTask<Pair<ByteArray, OutputStream>, Void, Unit>() {
+internal class WriteSocket(private val failCallback: () -> Unit) :
+    AsyncTask<Pair<ByteArray, OutputStream>, Void, Unit>() {
     override fun doInBackground(vararg params: Pair<ByteArray, OutputStream>?) {
-        params[0]?.second?.write(params[0]?.first as ByteArray)
+        try {
+            params[0]?.second?.write(params[0]?.first as ByteArray)
+        } catch (e: Exception) {
+            failCallback.invoke()
+        }
     }
 }
 

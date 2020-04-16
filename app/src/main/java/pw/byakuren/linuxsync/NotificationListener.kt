@@ -16,6 +16,7 @@ import pw.byakuren.linuxsync.io.SegmentType
 import pw.byakuren.linuxsync.io.ServerSocketThread
 import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.net.BindException
+import java.net.SocketException
 
 class NotificationListener : NotificationListenerService() {
 
@@ -74,9 +75,14 @@ class NotificationListener : NotificationListenerService() {
         data.add(0x7F)
 
         Log.d(TAG, "Crafted notification packet")
+        try {
+            MainActivity.socketThread?.write(data.toByteArray())
+            Log.d(TAG, "Sent buffer size " + data.size + " over socket")
+        } catch (e: SocketException) {
+            Log.e(TAG, "Socket closed when trying to send data")
+        }
 
-        MainActivity.socketThread?.write(data.toByteArray())
-        Log.d(TAG, "Sent buffer size " + data.size + " over socket")
+
     }
 
     private fun createNotificationChannel() {
@@ -98,6 +104,7 @@ class NotificationListener : NotificationListenerService() {
             MainActivity.socketThread = ServerSocketThread(
                 this, 5000, this.baseContext.getSharedPreferences("trusted_devices", Context.MODE_PRIVATE)
             ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
+            MainActivity.socketThread!!.setDisconnectCallback { stopListen(); startListen() }
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
                 .show()
