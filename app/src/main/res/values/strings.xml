@@ -23,9 +23,17 @@
 
     <string name="accept_connection_message">Accept the connection from %1$s (%2$s)?</string>
 
+    <string name="placeholder">you shouldn\'t see this</string>
+
     <string name="permission_button_text">If you aren\'t receiving notifications when connected, check you have given the permission.</string>
     <string name="open_permission_intent">Open Notification Settings</string>
     <string name="send_test_notification">Send a test notification.</string>
+
+    <string name="connected_time_elapsed">Time Elapsed: %1$s</string>
+    <string name="connected_hostname">Hostname: %1$s</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="searching">Searching</string>
 
     <string name="remove">Remove</string>
     <string name="device_list">Trusted Device List</string>

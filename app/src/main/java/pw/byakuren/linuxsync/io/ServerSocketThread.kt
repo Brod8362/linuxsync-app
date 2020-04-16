@@ -28,6 +28,8 @@ class ServerSocketThread(
     private var heartbeat: HeartbeatThread? = null
     private var connectCallback: ((ServerSocketThread) -> Unit)? = null
     private var disconnectCallback: (() -> Unit)? = null
+
+    private var connectedHostname: String? = null
     private var connectedTime: LocalDateTime? = null
 
 
@@ -56,7 +58,10 @@ class ServerSocketThread(
 
             connectedSocket = tempSocket
             Log.d(TAG, "Accepted socket connection from ${addrString}")
+
             connectedTime = LocalDateTime.now()
+            connectedHostname = connectedSocket!!.inetAddress.canonicalHostName
+
             connectCallback?.invoke(this)
             connectedSocket?.soTimeout = 20000
             readThread = SocketReadThread(
@@ -122,22 +127,18 @@ class ServerSocketThread(
     }
 
     fun connectedHostname(): String? {
-        if (connectedSocket == null) {
-            return null;
-        } else {
-            return connectedSocket!!.inetAddress.canonicalHostName
-        }
+       return connectedHostname
     }
 
     fun connectedTime(): LocalDateTime? {
         return connectedTime
     }
 
-    fun connectedElapsedTime(): Int {
+    fun connectedElapsedTime(): Long {
         if (connectedTime == null) {
             return 0;
         } else {
-            return ChronoUnit.SECONDS.between(LocalDateTime.now(), connectedTime).toInt()
+            return ChronoUnit.SECONDS.between(connectedTime, LocalDateTime.now())
         }
     }
 
