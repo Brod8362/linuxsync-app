@@ -60,4 +60,5 @@
     <string name="prefs_settings">settings</string>
 
     <string name="setting_automatic_connections">automatic_connections_enabled</string>
+    <string name="add">Add</string>
 </resources>

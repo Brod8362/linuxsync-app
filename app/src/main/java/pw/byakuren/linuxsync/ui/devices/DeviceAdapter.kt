@@ -30,8 +30,8 @@ class DeviceAdapter(private var ips: Array<String>, private var dates: Array<Str
             val rm = ips.get(position)
             editor.remove(rm)
             editor.apply()
-            ips = ips.drop(position).toTypedArray()
-            dates = dates.drop(position).toTypedArray()
+            ips = sharedPreferences.all.keys.toTypedArray()
+            dates = sharedPreferences.all.values.map { a -> a.toString() }.toTypedArray()
             notifyDataSetChanged()
         }
     }
