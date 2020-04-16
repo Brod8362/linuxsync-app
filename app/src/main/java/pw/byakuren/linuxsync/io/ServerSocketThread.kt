@@ -18,8 +18,8 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 class ServerSocketThread(
-    val context: Context, port: Int, val sharedPreferences: SharedPreferences,
-    val dialogCallback: ((InetAddress) -> Boolean)
+    private val context: Context, port: Int, private val sharedPreferences: SharedPreferences,
+    private val dialogCallback: ((InetAddress) -> Boolean)
 ) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
@@ -73,7 +73,7 @@ class ServerSocketThread(
             heartbeat?.start()
         } else {
             //declined connection
-            Log.d(TAG, "Declined connection from ${addrString}")
+            Log.d(TAG, "Declined connection from $addrString")
             connectedSocket = tempSocket
             close()
             sleep(3000)
@@ -104,6 +104,8 @@ class ServerSocketThread(
     override fun interrupt() {
         super.interrupt()
         Log.d(TAG, "Shutdown socket.")
+        close()
+        sleep(2000)
         connectedSocket?.close()
         serverSocket.reuseAddress = true
         serverSocket.close()
@@ -135,10 +137,10 @@ class ServerSocketThread(
     }
 
     fun connectedElapsedTime(): Long {
-        if (connectedTime == null) {
-            return 0;
+        return if (connectedTime == null) {
+            0
         } else {
-            return ChronoUnit.SECONDS.between(connectedTime, LocalDateTime.now())
+            ChronoUnit.SECONDS.between(connectedTime, LocalDateTime.now())
         }
     }
 
