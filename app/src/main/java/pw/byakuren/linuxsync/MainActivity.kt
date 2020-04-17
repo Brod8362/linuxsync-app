@@ -1,6 +1,7 @@
 package pw.byakuren.linuxsync
 
 import android.app.AlertDialog
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -169,6 +170,21 @@ class MainActivity : AppCompatActivity() {
             .setContentTitle("Title")
             .setContentText("Content")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        with(NotificationManagerCompat.from(view.context)) {
+            notify(0, nbuilder.build())
+        }
+    }
+
+    fun sendTestNotificationWithActions(view: View) {
+        val actionA = NotificationCompat.Action(0, "Action A", null);
+        val actionB = NotificationCompat.Action(0, "Action B", null);
+        val nbuilder = NotificationCompat.Builder(view.context, "sync_test_channel")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Actions")
+            .setContentText("Content and some actions")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .addAction(actionA)
+            .addAction(actionB)
         with(NotificationManagerCompat.from(view.context)) {
             notify(0, nbuilder.build())
         }

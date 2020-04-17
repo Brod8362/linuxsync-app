@@ -37,7 +37,11 @@ class NotificationListener : NotificationListenerService() {
 
         //set up broadcast receivers
         val intentFilter = IntentFilter("android.net.wifi.supplicant.CONNECTION_CHANGE")
-        this.registerReceiver(NetworkMonitor({startAutoListen()}, {stopListen("Network Unavailable")}), intentFilter)
+        this.registerReceiver(
+            NetworkMonitor(
+                { startAutoListen() },
+                { stopListen("Network Unavailable") }), intentFilter
+        )
 
         val batteryIntentFilter = IntentFilter("android.intent.action.ACTION_BATTERY_LOW")
         batteryIntentFilter.addAction("android.intent.action.ACTION_BATTERY_CHANGED")
@@ -50,7 +54,7 @@ class NotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
         if (MainActivity.socketThread == null) {
-            Log.d(TAG,"socket doesn't exist, ignoring notification")
+            Log.d(TAG, "socket doesn't exist, ignoring notification")
             return
         }
         if (notif == null) {
@@ -81,30 +85,17 @@ class NotificationListener : NotificationListenerService() {
         map.put(SegmentType.AppName, appinfo.packageName)
         map.put(SegmentType.NotificationId, notif.id.toString())
 
-        //now all the actions. the action segment has its own format
-        var actionIndex: Byte = 0
-        if (notif.notification.actions != null) {
-            for (action in notif.notification.actions) {
-                //put action header
-                data.add(SegmentType.Action.header)
-
-                val notifTitle = action.title.toString()
-                //next, length of the title. this does not include the last extra byte
-                data.add((notifTitle.length).toByte())
-
-                //then add the title
-                data.addAll(notifTitle.toByteArray().toList())
-
-                //write the index of the action (used when processing it on reply from client)
-                data.add(actionIndex++)
-            }
-        }
-
         //first byte must be 0x3C, to distinguish garbage
         data.add(0x3C)
 
+        //now all the actions. the action segment has its own format
+        var actions = 0
+        if (notif.notification.actions != null) {
+            actions = notif.notification.actions.size
+        }
+
         //next byte is the number of segments in the packet
-        data.add((map.size+actionIndex).toByte())
+        data.add((map.size + actions).toByte())
 
         //then, fill in all the segments. first the segment header, then length, then data.
         for ((type, str) in map) {
@@ -112,6 +103,23 @@ class NotificationListener : NotificationListenerService() {
             data.add(type.header)
             data.add(bytes.size.toByte())
             data.addAll(str.toByteArray().toList().subList(0, 127.coerceAtMost(bytes.size)))
+        }
+
+        if (notif.notification.actions != null) {
+            for ((actionIndex, action) in notif.notification.actions.withIndex()) {
+                //put action header
+                data.add(SegmentType.Action.header)
+                val actionTitle = action.title.toString()
+                //next, length of the title. this does not include the last extra byte
+                data.add((actionTitle.length).toByte())
+                Log.d(TAG, actionTitle.length.toByte().toString())
+
+                //then add the title
+                data.addAll(actionTitle.toByteArray().toList())
+
+                //write the index of the action (used when processing it on reply from client)
+                data.add(actionIndex.toByte())
+            }
         }
 
         //last byte must be 0x7F
@@ -138,11 +146,16 @@ class NotificationListener : NotificationListenerService() {
             Log.d(TAG, "can't bind because network isn't connected")
         }
         try {
-            Log.d(TAG,"binding socket")
+            Log.d(TAG, "binding socket")
             MainActivity.socketThread = ServerSocketThread(
-                this, 5000, this.baseContext.getSharedPreferences(getString(R.string.prefs_trusted_devices), Context.MODE_PRIVATE),
+                this,
+                5000,
+                this.baseContext.getSharedPreferences(
+                    getString(R.string.prefs_trusted_devices),
+                    Context.MODE_PRIVATE
+                ),
                 { addr -> showAcceptDialog(addr.toString(), addr.hostName) },
-                { reason -> updateNotification(reason)}
+                { reason -> updateNotification(reason) }
             )
             MainActivity.socketThread!!.setDisconnectCallback { stopListen(); startListen() }
         } catch (e: BindException) {
@@ -175,7 +188,7 @@ class NotificationListener : NotificationListenerService() {
     fun wifiIsConnected(): Boolean {
         val connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connManager.activeNetwork
-        return network!=null
+        return network != null
     }
 
     /**
@@ -195,8 +208,10 @@ class NotificationListener : NotificationListenerService() {
         val intent = Intent(this.baseContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val notifyPendingIntent = PendingIntent.getActivity(this.baseContext, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
+        val notifyPendingIntent = PendingIntent.getActivity(
+            this.baseContext, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
         return Notification.Builder(this, getString(R.string.persistent_channel_id))
             .setContentTitle("LinuxSync")
             .setContentText(content)
