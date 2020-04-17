@@ -3,7 +3,6 @@ package pw.byakuren.linuxsync.io
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
@@ -32,18 +31,27 @@ class ServerSocketThread(
 
     private val TAG = "BYAKUREN_SOCKET"
 
+    @ExperimentalStdlibApi
     @SuppressLint("ApplySharedPref") //this ignores the warning on "editor.commit()"
     override fun run() {
         Log.d(TAG, "Waiting for socket connections...")
-        notificationCallback("Waiting for connection")
         val tempSocket = try {
+            notificationCallback("Waiting for connection")
             serverSocket.accept()
         } catch (e: SocketException) {
             Log.e(TAG, "socket closed while accept")
+            notificationCallback("Socket closed")
             null
         } ?: return //this returns if the obj is null
 
         val addrString = tempSocket.inetAddress.toString()
+        val hostnameBuffer = ByteArray(32)
+        var bytesRead = 0
+        while (bytesRead == 0) {
+            bytesRead = tempSocket.getInputStream().read(hostnameBuffer)
+        }
+        val hostname = hostnameBuffer.decodeToString(0, bytesRead, false)
+
         if (sharedPreferences.contains(addrString) ||
             dialogCallback.invoke(tempSocket.inetAddress)
         ) {
@@ -55,11 +63,12 @@ class ServerSocketThread(
             }
 
             connectedSocket = tempSocket
-            Log.d(TAG, "Accepted socket connection from ${addrString}")
-            notificationCallback("Connected to $addrString")
+            Log.d(TAG, "Accepted socket connection from $addrString ($hostname)")
+            write(byteArrayOf(0xAC.toByte()))
+            notificationCallback("Connected to $hostname")
 
             connectedTime = LocalDateTime.now()
-            connectedHostname = connectedSocket!!.inetAddress.canonicalHostName
+            connectedHostname = hostname
 
             connectCallback?.invoke(this)
             connectedSocket?.soTimeout = 20000
@@ -73,7 +82,7 @@ class ServerSocketThread(
             heartbeat?.start()
         } else {
             //declined connection
-            Log.d(TAG, "Declined connection from $addrString")
+            Log.d(TAG, "Declined connection from $addrString ($hostname)")
             connectedSocket = tempSocket
             close()
             sleep(3000)

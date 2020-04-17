@@ -89,9 +89,9 @@ class NotificationListener : NotificationListenerService() {
             Log.d(TAG, "Sent buffer size " + data.size + " over socket")
         } catch (e: SocketException) {
             Log.e(TAG, "Socket closed when trying to send data")
+        } catch (e: Exception) {
+            Log.e(TAG, "failed to sent data over socket", e)
         }
-
-
     }
 
     private fun createNotificationChannel() {
@@ -109,8 +109,11 @@ class NotificationListener : NotificationListenerService() {
     }
 
     fun startListen() {
-        if (!wifiIsConnected()) return;
+        if (!wifiIsConnected()) {
+            Log.d(TAG, "can't bind because network isn't connected")
+        }
         try {
+            Log.d(TAG,"binding socket")
             MainActivity.socketThread = ServerSocketThread(
                 this, 5000, this.baseContext.getSharedPreferences(getString(R.string.prefs_trusted_devices), Context.MODE_PRIVATE),
                 { addr -> showAcceptDialog(addr.toString(), addr.hostName) },
@@ -156,6 +159,8 @@ class NotificationListener : NotificationListenerService() {
     fun startAutoListen() {
         val settings = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
         if (settings.getBoolean(getString(R.string.setting_automatic_connections), false)) {
+            Log.d(TAG, "starting auto listen")
+            Thread.sleep(3000) //sleep for a little bit to ensure the network is connected
             startListen()
         }
     }
