@@ -1,6 +1,8 @@
 package pw.byakuren.linuxsync.ui.home
 
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import pw.byakuren.linuxsync.MainActivity
 import pw.byakuren.linuxsync.R
+import java.lang.Thread.sleep
 import java.text.SimpleDateFormat
 import java.time.Duration
 import kotlin.time.hours
@@ -57,5 +60,10 @@ class HomeFragment : Fragment() {
                 time_textview.text = getString(R.string.connected_time_elapsed, "-")
             }
         }
+        val autoconnect: TextView = view.findViewById(R.id.autoconnect_enabled_text)
+        val auto_enabled = view.context.getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+            .getBoolean(getString(R.string.setting_automatic_connections), false)
+        autoconnect.text = getString(R.string.autoconnect_enabled_text,
+            if (auto_enabled) "enabled" else "disabled")
     }
 }

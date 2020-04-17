@@ -4,7 +4,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
+import android.net.ConnectivityManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -31,6 +33,7 @@ class NotificationListener : NotificationListenerService() {
         Log.d(TAG, "Listener connected")
         createNotificationChannel()
 
+        //send persistent notification
         val notification = Notification.Builder(this, getString(R.string.persistent_channel_id))
             .setContentTitle("LinuxSync")
             .setContentText("LinuxSync is running")
@@ -39,14 +42,16 @@ class NotificationListener : NotificationListenerService() {
             .build()
         startForeground(NOTIFICATION_ID, notification)
 
-        val settings = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
-        if (settings.getBoolean(getString(R.string.setting_automatic_connections), false)) {
-            startListen()
-        }
+        //set up broadcast receivers
+        val intentFilter = IntentFilter("android.net.wifi.supplicant.CONNECTION_CHANGE")
+        this.registerReceiver(NetworkMonitor({startAutoListen()}, {stopListen()}), intentFilter)
+
+        startAutoListen()
     }
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
         if (MainActivity.socketThread == null) {
+            Log.d(TAG,"network not connected, won't start socket")
             return
         }
         Log.d(TAG, "Caught notification")
@@ -105,6 +110,7 @@ class NotificationListener : NotificationListenerService() {
     }
 
     fun startListen() {
+        if (!wifiIsConnected()) return;
         try {
             MainActivity.socketThread = ServerSocketThread(
                 this, 5000, this.baseContext.getSharedPreferences(
@@ -124,7 +130,6 @@ class NotificationListener : NotificationListenerService() {
 
     fun stopListen() {
         MainActivity.socketThread?.interrupt() //TODO: temporary way to stop socket thread
-        Thread.sleep(5000) //wait to ensure the socket is fully closed and done
         MainActivity.socketThread = null
     }
 
@@ -136,4 +141,19 @@ class NotificationListener : NotificationListenerService() {
         return dialog.res
     }
 
+    fun wifiIsConnected(): Boolean {
+        val connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connManager.activeNetwork
+        return network!=null
+    }
+
+    /**
+     * Start listening only if auto connect is enabled.
+     */
+    fun startAutoListen() {
+        val settings = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        if (settings.getBoolean(getString(R.string.setting_automatic_connections), false)) {
+            startListen()
+        }
+    }
 }

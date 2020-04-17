@@ -61,4 +61,5 @@
 
     <string name="setting_automatic_connections">automatic_connections_enabled</string>
     <string name="add">Add Trusted Device</string>
+    <string name="autoconnect_enabled_text">Autoconnect is %1$s</string>
 </resources>

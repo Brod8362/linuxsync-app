@@ -3,6 +3,7 @@ package pw.byakuren.linuxsync.io
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
@@ -10,10 +11,7 @@ import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.InetAddress
-import java.net.ServerSocket
-import java.net.Socket
-import java.net.SocketException
+import java.net.*
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 

@@ -4,6 +4,7 @@
     package="pw.byakuren.linuxsync">
 
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -33,12 +34,17 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <receiver android:name="pw.byakuren.linuxsync.BatteryMonitor">
+        <receiver android:name=".BatteryMonitor">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_BATTERY_LOW"/>
                 <action android:name="android.intent.action.ACTION_BATTERY_CHANGED"/>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:exported="true" android:name="pw.byakuren.linuxsync.NetworkMonitor">
+            <intent-filter>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
             </intent-filter>
         </receiver>
     </application>
