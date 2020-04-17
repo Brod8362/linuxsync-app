@@ -56,6 +56,12 @@ class NotificationListener : NotificationListenerService() {
         val intentFilter = IntentFilter("android.net.wifi.supplicant.CONNECTION_CHANGE")
         this.registerReceiver(NetworkMonitor({startAutoListen()}, {stopListen()}), intentFilter)
 
+        val batteryIntentFilter = IntentFilter("android.intent.action.ACTION_BATTERY_LOW")
+        batteryIntentFilter.addAction("android.intent.action.ACTION_BATTERY_CHANGED")
+        batteryIntentFilter.addAction("android.intent.action.ACTION_POWER_CONNECTED")
+        batteryIntentFilter.addAction("android.intent.action.ACTION_POWER_DISCONNECTED")
+        this.registerReceiver(BatteryMonitor(), batteryIntentFilter)
+
         startAutoListen()
     }
 
