@@ -53,11 +53,25 @@ class NotificationListener : NotificationListenerService() {
             Log.d(TAG,"socket doesn't exist, ignoring notification")
             return
         }
-        Log.d(TAG, "Caught notification")
+        if (notif == null) {
+            Log.d(TAG, "notfication is null");
+            return
+        }
+        val data = formatNotificationToPacketBytes(notif)
+        try {
+            MainActivity.socketThread?.write(data)
+        } catch (e: SocketException) {
+            Log.e(TAG, "Socket closed when trying to send data")
+        } catch (e: Exception) {
+            Log.e(TAG, "failed to sent data over socket", e)
+        }
+    }
+
+    fun formatNotificationToPacketBytes(notif: StatusBarNotification): ByteArray {
         val map = mutableMapOf<SegmentType, String>()
         val data = arrayListOf<Byte>()
 
-        val bundle = notif?.notification?.extras
+        val bundle = notif.notification?.extras
         val title: String = bundle?.get("android.title").toString()
         val extra: String = bundle?.get("android.text").toString()
         val subtext: String = bundle?.get("android.subtext").toString()
@@ -65,12 +79,32 @@ class NotificationListener : NotificationListenerService() {
         map.put(SegmentType.Title, title)
         map.put(SegmentType.Body, extra)
         map.put(SegmentType.AppName, appinfo.packageName)
+        map.put(SegmentType.NotificationId, notif.id.toString())
+
+        //now all the actions. the action segment has its own format
+        var actionIndex: Byte = 0
+        if (notif.notification.actions != null) {
+            for (action in notif.notification.actions) {
+                //put action header
+                data.add(SegmentType.Action.header)
+
+                val notifTitle = action.title.toString()
+                //next, length of the title. this does not include the last extra byte
+                data.add((notifTitle.length).toByte())
+
+                //then add the title
+                data.addAll(notifTitle.toByteArray().toList())
+
+                //write the index of the action (used when processing it on reply from client)
+                data.add(actionIndex++)
+            }
+        }
 
         //first byte must be 0x3C, to distinguish garbage
         data.add(0x3C)
 
         //next byte is the number of segments in the packet
-        data.add(map.size.toByte())
+        data.add((map.size+actionIndex).toByte())
 
         //then, fill in all the segments. first the segment header, then length, then data.
         for ((type, str) in map) {
@@ -82,16 +116,7 @@ class NotificationListener : NotificationListenerService() {
 
         //last byte must be 0x7F
         data.add(0x7F)
-
-        Log.d(TAG, "Crafted notification packet")
-        try {
-            MainActivity.socketThread?.write(data.toByteArray())
-            Log.d(TAG, "Sent buffer size " + data.size + " over socket")
-        } catch (e: SocketException) {
-            Log.e(TAG, "Socket closed when trying to send data")
-        } catch (e: Exception) {
-            Log.e(TAG, "failed to sent data over socket", e)
-        }
+        return data.toByteArray()
     }
 
     private fun createNotificationChannel() {

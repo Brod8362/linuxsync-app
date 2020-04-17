@@ -97,6 +97,7 @@ class ServerSocketThread(
             WriteSocket {
                 disconnectCallback?.invoke()
             }.execute(Pair(data, connectedSocket?.getOutputStream() as OutputStream))
+            Log.d(TAG, "Sent buffer size " + data.size + " over socket")
         } catch (e: TypeCastException) {
             Log.e(TAG, "failed to send notification, socket is probably not connected")
         } catch (e: Exception) {
