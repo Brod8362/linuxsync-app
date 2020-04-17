@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 
-class NetworkMonitor(val onEnable: ()->Unit, val onDisable: ()->Unit): BroadcastReceiver() {
+class NetworkMonitor(private val onEnable: ()->Unit, private val onDisable: ()->Unit): BroadcastReceiver() {
 
     private val TAG = "BYAKUREN_NETMON"
 

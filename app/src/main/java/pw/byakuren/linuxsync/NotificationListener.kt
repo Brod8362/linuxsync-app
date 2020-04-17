@@ -12,9 +12,7 @@ import android.net.ConnectivityManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
-import android.view.View
 import android.widget.Toast
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pw.byakuren.linuxsync.io.SegmentType
 import pw.byakuren.linuxsync.io.ServerSocketThread
@@ -28,33 +26,18 @@ class NotificationListener : NotificationListenerService() {
 
     var TAG = "BYAKUREN_NLISTENER"
 
-
     override fun onListenerConnected() {
         super.onListenerConnected()
         MainActivity.notificationListener = this
         Log.d(TAG, "Listener connected")
         createNotificationChannel()
 
-        //create intent to open main activity
-        val intent = Intent(this.baseContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val notifyPendingIntent = PendingIntent.getActivity(this.baseContext, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
-
         //send peristent notif
-        val notification = Notification.Builder(this, getString(R.string.persistent_channel_id))
-            .setContentTitle("LinuxSync")
-            .setContentText("LinuxSync is running")
-            .setSmallIcon(R.drawable.ic_menu_send)
-            .setTicker("LinuxSync is running")
-            .setContentIntent(notifyPendingIntent)
-            .build()
-        startForeground(NOTIFICATION_ID, notification)
+        startForeground(NOTIFICATION_ID, createLinuxSyncNotification("LinuxSync is running"))
 
         //set up broadcast receivers
         val intentFilter = IntentFilter("android.net.wifi.supplicant.CONNECTION_CHANGE")
-        this.registerReceiver(NetworkMonitor({startAutoListen()}, {stopListen()}), intentFilter)
+        this.registerReceiver(NetworkMonitor({startAutoListen()}, {stopListen("Network Unavailable")}), intentFilter)
 
         val batteryIntentFilter = IntentFilter("android.intent.action.ACTION_BATTERY_LOW")
         batteryIntentFilter.addAction("android.intent.action.ACTION_BATTERY_CHANGED")
@@ -67,7 +50,7 @@ class NotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(notif: StatusBarNotification?) {
         if (MainActivity.socketThread == null) {
-            Log.d(TAG,"network not connected, won't start socket")
+            Log.d(TAG,"socket doesn't exist, ignoring notification")
             return
         }
         Log.d(TAG, "Caught notification")
@@ -129,11 +112,10 @@ class NotificationListener : NotificationListenerService() {
         if (!wifiIsConnected()) return;
         try {
             MainActivity.socketThread = ServerSocketThread(
-                this, 5000, this.baseContext.getSharedPreferences(
-                    getString(R.string.prefs_trusted_devices),
-                    Context.MODE_PRIVATE
-                )
-            ) { addr -> showAcceptDialog(addr.toString(), addr.hostName) }
+                this, 5000, this.baseContext.getSharedPreferences(getString(R.string.prefs_trusted_devices), Context.MODE_PRIVATE),
+                { addr -> showAcceptDialog(addr.toString(), addr.hostName) },
+                { reason -> updateNotification(reason)}
+            )
             MainActivity.socketThread!!.setDisconnectCallback { stopListen(); startListen() }
         } catch (e: BindException) {
             Toast.makeText(this, "Could not make server: is it already running?", Toast.LENGTH_LONG)
@@ -145,6 +127,11 @@ class NotificationListener : NotificationListenerService() {
     }
 
     fun stopListen() {
+        stopListen("Connections closed")
+    }
+
+    fun stopListen(reason: String) {
+        updateNotification(reason)
         MainActivity.socketThread?.interrupt() //TODO: temporary way to stop socket thread
         MainActivity.socketThread = null
     }
@@ -171,5 +158,26 @@ class NotificationListener : NotificationListenerService() {
         if (settings.getBoolean(getString(R.string.setting_automatic_connections), false)) {
             startListen()
         }
+    }
+
+    private fun createLinuxSyncNotification(content: String): Notification {
+        //create intent to open main activity
+        val intent = Intent(this.baseContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val notifyPendingIntent = PendingIntent.getActivity(this.baseContext, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+        return Notification.Builder(this, getString(R.string.persistent_channel_id))
+            .setContentTitle("LinuxSync")
+            .setContentText(content)
+            .setSmallIcon(R.drawable.ic_menu_send)
+            .setTicker("LinuxSync is running")
+            .setContentIntent(notifyPendingIntent)
+            .build()
+    }
+
+    private fun updateNotification(content: String) {
+        val notifCompat = NotificationManagerCompat.from(this.baseContext)
+        notifCompat.notify(NOTIFICATION_ID, createLinuxSyncNotification(content))
     }
 }

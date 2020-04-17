@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit
 
 class ServerSocketThread(
     private val context: Context, port: Int, private val sharedPreferences: SharedPreferences,
-    private val dialogCallback: ((InetAddress) -> Boolean)
+    private val dialogCallback: ((InetAddress) -> Boolean), private val notificationCallback:((String) -> Unit)
 ) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
@@ -35,6 +35,7 @@ class ServerSocketThread(
     @SuppressLint("ApplySharedPref") //this ignores the warning on "editor.commit()"
     override fun run() {
         Log.d(TAG, "Waiting for socket connections...")
+        notificationCallback("Waiting for connection")
         val tempSocket = try {
             serverSocket.accept()
         } catch (e: SocketException) {
@@ -55,6 +56,7 @@ class ServerSocketThread(
 
             connectedSocket = tempSocket
             Log.d(TAG, "Accepted socket connection from ${addrString}")
+            notificationCallback("Connected to $addrString")
 
             connectedTime = LocalDateTime.now()
             connectedHostname = connectedSocket!!.inetAddress.canonicalHostName
@@ -105,8 +107,12 @@ class ServerSocketThread(
         close()
         sleep(2000)
         connectedSocket?.close()
-        serverSocket.reuseAddress = true
-        serverSocket.close()
+        try {
+            serverSocket.reuseAddress = true
+            serverSocket.close()
+        } catch (e: Exception) {
+            Log.d(TAG,"socket is closed")
+        }
         readThread?.interrupt()
     }
 
