@@ -3,7 +3,9 @@ package pw.byakuren.linuxsync
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.net.ConnectivityManager
@@ -33,12 +35,20 @@ class NotificationListener : NotificationListenerService() {
         Log.d(TAG, "Listener connected")
         createNotificationChannel()
 
-        //send persistent notification
+        //create intent to open main activity
+        val intent = Intent(this.baseContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val notifyPendingIntent = PendingIntent.getActivity(this.baseContext, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+
+        //send peristent notif
         val notification = Notification.Builder(this, getString(R.string.persistent_channel_id))
             .setContentTitle("LinuxSync")
             .setContentText("LinuxSync is running")
             .setSmallIcon(R.drawable.ic_menu_send)
             .setTicker("LinuxSync is running")
+            .setContentIntent(notifyPendingIntent)
             .build()
         startForeground(NOTIFICATION_ID, notification)
 
