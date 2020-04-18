@@ -1,0 +1,11 @@
+syntax = "proto2";
+
+package linuxsync;
+
+option java_package = "pw.byakuren.linuxsync.encryption";
+option java_outer_classname = "Authentication";
+
+message ClientDetails {
+    required string hostname = 1;
+    optional bytes pubkey = 2;
+}

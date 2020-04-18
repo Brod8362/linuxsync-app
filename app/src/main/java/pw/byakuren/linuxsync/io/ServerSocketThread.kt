@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
+import com.google.protobuf.InvalidProtocolBufferException
+import pw.byakuren.linuxsync.encryption.Authentication
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.InputStream
@@ -45,13 +47,20 @@ class ServerSocketThread(
         } ?: return //this returns if the obj is null
 
         val addrString = tempSocket.inetAddress.toString()
-        val hostnameBuffer = ByteArray(32)
+        val dataBuffer = ByteArray(1024)
         var bytesRead = 0
         while (bytesRead == 0) {
-            bytesRead = tempSocket.getInputStream().read(hostnameBuffer)
+            bytesRead = tempSocket.getInputStream().read(dataBuffer)
         }
-        val hostname = hostnameBuffer.decodeToString(0, bytesRead, false)
+        val authInfo = try {
+            Authentication.ClientDetails.parseFrom(dataBuffer.sliceArray(IntRange(0,bytesRead-1)))
+        } catch (e: InvalidProtocolBufferException) {
+            Log.e(TAG, "invalid protobuf data", e)
+            close()
+            return
+        }
 
+        val hostname = authInfo.hostname
         if (sharedPreferences.contains(addrString) ||
             dialogCallback.invoke(tempSocket.inetAddress)
         ) {
