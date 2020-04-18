@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 class BatteryMonitor : BroadcastReceiver() {
 
     val TAG = "BYAKUREN_BATMON"
+    val NOTIFICATION_ID = 90348510
 
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d(TAG, "batmon recv")
@@ -56,7 +57,9 @@ class BatteryMonitor : BroadcastReceiver() {
             .setContentText(s)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         with(NotificationManagerCompat.from(context)) {
-            notify(0, nbuilder.build())
+            notify(NOTIFICATION_ID, nbuilder.build())
         }
+        //send a notification and then immediately cancel it so the user doesn't see the annoying popup
+        NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
     }
 }

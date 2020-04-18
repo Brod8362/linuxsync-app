@@ -41,6 +41,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun populateConnectionDetails(view: View) {
+        if (this.context == null) return;
         val table: TableLayout = view.findViewById(R.id.connected_info_table)
         val connected_textview: TextView = table.findViewById(R.id.text_is_connected)
         val hostname_textview: TextView = table.findViewById(R.id.text_connected_hostname)

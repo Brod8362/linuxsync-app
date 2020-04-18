@@ -64,6 +64,10 @@ class NotificationListener : NotificationListenerService() {
             Log.d(TAG, "notfication is null");
             return
         }
+        if (notif.id == NOTIFICATION_ID) {
+            Log.v(TAG, "ignoring own persistent notification")
+            return
+        }
         val protobuf =
             getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE).getBoolean(
                 getString(R.string.setting_use_protobuf), true)
