@@ -13,6 +13,9 @@ import java.io.DataInputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.*
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.spec.X509EncodedKeySpec
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
@@ -28,8 +31,10 @@ class ServerSocketThread(
     private var connectCallback: ((ServerSocketThread) -> Unit)? = null
     private var disconnectCallback: (() -> Unit)? = null
 
-    private var connectedHostname: String? = null
+    private var connectedClient: Authentication.ClientDetails? = null
     private var connectedTime: LocalDateTime? = null
+
+    private val keyFactory = KeyFactory.getInstance("RSA")
 
     private val TAG = "BYAKUREN_SOCKET"
 
@@ -77,7 +82,7 @@ class ServerSocketThread(
             notificationCallback("Connected to $hostname")
 
             connectedTime = LocalDateTime.now()
-            connectedHostname = hostname
+            connectedClient= authInfo
 
             connectCallback?.invoke(this)
             connectedSocket?.soTimeout = 20000
@@ -115,7 +120,6 @@ class ServerSocketThread(
         }
     }
 
-
     fun close() {
         write(byteArrayOf(0x7F, 0x7F))
     }
@@ -151,8 +155,21 @@ class ServerSocketThread(
         return connectedSocket != null && connectedSocket!!.isConnected
     }
 
+    fun client(): Authentication.ClientDetails? {
+        return connectedClient
+    }
+
+    fun shouldEncrypt():Boolean {
+        return client()?.hasPubkey()!!
+    }
+
+    fun getPublicKey(): PublicKey? {
+        val publicSpec = X509EncodedKeySpec(connectedClient?.pubkey?.toByteArray())
+        return keyFactory.generatePublic(publicSpec)
+    }
+
     fun connectedHostname(): String? {
-        return connectedHostname
+        return connectedClient?.hostname
     }
 
     fun connectedTime(): LocalDateTime? {
@@ -166,7 +183,6 @@ class ServerSocketThread(
             ChronoUnit.SECONDS.between(connectedTime, LocalDateTime.now())
         }
     }
-
 }
 
 internal class WriteSocket(private val failCallback: () -> Unit) :

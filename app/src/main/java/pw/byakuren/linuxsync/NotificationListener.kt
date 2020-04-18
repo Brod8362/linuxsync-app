@@ -22,12 +22,15 @@ import pw.byakuren.linuxsync.io.ServerSocketThread
 import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
 import java.net.BindException
 import java.net.SocketException
+import javax.crypto.Cipher
 
 class NotificationListener : NotificationListenerService() {
 
     private val NOTIFICATION_ID: Int = 85094321
 
     var TAG = "BYAKUREN_NLISTENER"
+
+    private val cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding")
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -72,9 +75,14 @@ class NotificationListener : NotificationListenerService() {
             getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE).getBoolean(
                 getString(R.string.setting_use_protobuf), true)
 
-        val data = if (protobuf)
-            formatNotificationToProtobufBytes(notif)
-        else
+        val shouldEncrypt: Boolean = MainActivity.socketThread?.shouldEncrypt()!!
+
+        val data = if (protobuf && !shouldEncrypt)
+            byteArrayOf(0x3D) + formatNotificationToProtobufBytes(notif)
+        else if (protobuf && shouldEncrypt) {
+            cipher.init(Cipher.ENCRYPT_MODE, MainActivity.socketThread!!.getPublicKey()!!)
+            byteArrayOf(0x3E) + cipher.doFinal(formatNotificationToProtobufBytes(notif))
+        } else
             formatNotificationToPacketBytes(notif)
         try {
             MainActivity.socketThread?.write(data)
@@ -111,7 +119,7 @@ class NotificationListener : NotificationListenerService() {
                 )
             }
         }
-        return byteArrayOf(0x3D) + proto.build().toByteArray()
+        return proto.build().toByteArray()
     }
 
     fun formatNotificationToPacketBytes(notif: StatusBarNotification): ByteArray {
