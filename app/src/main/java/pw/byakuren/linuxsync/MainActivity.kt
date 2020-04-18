@@ -130,6 +130,14 @@ class MainActivity : AppCompatActivity() {
         editor.apply()
     }
 
+    fun protobufSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_use_protobuf), switch.isChecked)
+        editor.apply()
+    }
+
     fun startListen() {
         Log.d(TAG, "Enable client connections")
         if (notificationListener != null) {

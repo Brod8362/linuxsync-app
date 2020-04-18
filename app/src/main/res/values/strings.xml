@@ -61,8 +61,14 @@
 
     <string name="prefs_trusted_devices">trusted_devices</string>
     <string name="prefs_settings">settings</string>
-
     <string name="setting_automatic_connections">automatic_connections_enabled</string>
+    <string name="setting_use_protobuf">protobuf_enabled</string>
+
     <string name="add">Add Trusted Device</string>
     <string name="autoconnect_enabled_text">Autoconnect is %1$s</string>
+
+    <string name="enable_protobuf_text">Enable Protobuf</string>
+    <string name="protobuf_description">Use protobuf instead of the proprietary format. May not work with older versions of the client. (Recommended)</string>
+
+
 </resources>

@@ -41,6 +41,8 @@ class ConnectionFragment : Fragment() {
         val prefs = root.context.getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
         val autoSwitch: Switch = root.findViewById(R.id.autoconnect_switch)
         autoSwitch.isChecked = prefs.getBoolean(getString(R.string.setting_automatic_connections), false)
+        val protoSwitch: Switch = root.findViewById(R.id.protobuf_switch)
+        protoSwitch.isChecked = prefs.getBoolean(getString(R.string.setting_use_protobuf), true)
         return root
     }
 

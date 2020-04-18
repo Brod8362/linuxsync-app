@@ -64,7 +64,14 @@ class NotificationListener : NotificationListenerService() {
             Log.d(TAG, "notfication is null");
             return
         }
-        val data = formatNotificationToPacketBytes(notif)
+        val protobuf =
+            getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE).getBoolean(
+                getString(R.string.setting_use_protobuf), true)
+
+        val data = if (protobuf)
+            formatNotificationToProtobufBytes(notif)
+        else
+            formatNotificationToPacketBytes(notif)
         try {
             MainActivity.socketThread?.write(data)
         } catch (e: SocketException) {
@@ -74,7 +81,7 @@ class NotificationListener : NotificationListenerService() {
         }
     }
 
-    fun formatNotificationToProtobuf(notif: StatusBarNotification): NotificationData? {
+    fun formatNotificationToProtobufBytes(notif: StatusBarNotification): ByteArray {
         val bundle = notif.notification?.extras
         val title: String = bundle?.get("android.title").toString()
         val extra: String = bundle?.get("android.text").toString()
@@ -95,7 +102,7 @@ class NotificationListener : NotificationListenerService() {
                 )
             }
         }
-        return proto.build();
+        return byteArrayOf(0x3D) + proto.build().toByteArray()
     }
 
     fun formatNotificationToPacketBytes(notif: StatusBarNotification): ByteArray {
