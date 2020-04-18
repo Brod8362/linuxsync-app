@@ -63,6 +63,7 @@
     <string name="prefs_settings">settings</string>
     <string name="setting_automatic_connections">automatic_connections_enabled</string>
     <string name="setting_use_protobuf">protobuf_enabled</string>
+    <string name="setting_battery_updates">battery_updates_enabled</string>
 
     <string name="add">Add Trusted Device</string>
     <string name="autoconnect_enabled_text">Autoconnect is %1$s</string>
@@ -70,5 +71,7 @@
     <string name="enable_protobuf_text">Enable Protobuf</string>
     <string name="protobuf_description">Use protobuf instead of the proprietary format. May not work with older versions of the client. (Recommended)</string>
 
+    <string name="battery_updates_text">Battery Status Updates</string>
+    <string name="battery_updates_description">Send notifications when the battery status changes (low charge, power connected, power disconnected, etc.)</string>
 
 </resources>
