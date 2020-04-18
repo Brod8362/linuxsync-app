@@ -83,10 +83,15 @@ class NotificationListener : NotificationListenerService() {
 
     fun formatNotificationToProtobufBytes(notif: StatusBarNotification): ByteArray {
         val bundle = notif.notification?.extras
-        val title: String = bundle?.get("android.title").toString()
-        val extra: String = bundle?.get("android.text").toString()
+        var title: String = bundle?.get("android.title").toString()
+        var extra: String = bundle?.get("android.text").toString()
+        if (title.isEmpty()) {
+            title = "<no title>"
+        }
+        if (extra.isEmpty()) {
+            extra = "<no body>"
+        }
         val appinfo: ApplicationInfo = bundle?.get("android.appInfo") as ApplicationInfo
-
         val proto = newBuilder()
             .setTitle(title)
             .setBody(extra)
