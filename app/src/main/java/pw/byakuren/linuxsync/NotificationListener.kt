@@ -14,6 +14,9 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
+import pw.byakuren.linuxsync.io.NotificationProto
+import pw.byakuren.linuxsync.io.NotificationProto.NotificationData
+import pw.byakuren.linuxsync.io.NotificationProto.NotificationData.newBuilder
 import pw.byakuren.linuxsync.io.SegmentType
 import pw.byakuren.linuxsync.io.ServerSocketThread
 import pw.byakuren.linuxsync.ui.ConnectionAcceptDialog
@@ -69,6 +72,30 @@ class NotificationListener : NotificationListenerService() {
         } catch (e: Exception) {
             Log.e(TAG, "failed to sent data over socket", e)
         }
+    }
+
+    fun formatNotificationToProtobuf(notif: StatusBarNotification): NotificationData? {
+        val bundle = notif.notification?.extras
+        val title: String = bundle?.get("android.title").toString()
+        val extra: String = bundle?.get("android.text").toString()
+        val appinfo: ApplicationInfo = bundle?.get("android.appInfo") as ApplicationInfo
+
+        val proto = newBuilder()
+            .setTitle(title)
+            .setBody(extra)
+            .setAppPackage(appinfo.packageName)
+            .setId(notif.id)
+
+        if (notif.notification.actions != null) {
+            for ((actionIndex, action) in notif.notification.actions.withIndex()) {
+                proto.addActions(
+                    NotificationData.Action.newBuilder()
+                        .setTitle(action.title.toString())
+                        .setIndex(actionIndex)
+                )
+            }
+        }
+        return proto.build();
     }
 
     fun formatNotificationToPacketBytes(notif: StatusBarNotification): ByteArray {

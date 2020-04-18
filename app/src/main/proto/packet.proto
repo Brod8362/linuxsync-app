@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+package linuxsync;
+
+option java_package = "pw.byakuren.linuxsync.io";
+option java_outer_classname = "NotificationProto";
+
+message NotificationData {
+    optional string title = 1;
+    optional string body = 2;
+    required string app_package = 3;
+    optional bytes image = 4;
+    required int32 id = 5;
+
+    message Action {
+        required string title = 1;
+        required int32 index = 2;
+    }
+
+    repeated Action actions = 6;
+}

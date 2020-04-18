@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'com.google.protobuf'
 
 apply plugin: 'kotlin-android'
@@ -23,10 +22,50 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions { //this is necessary to fix " Cannot inline bytecode built with JVM target 1.8 into bytecode that is being built with JVM target 1.6. "
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    sourceSets {
+        main {
+            proto {
+                // In addition to the default 'src/main/proto'
+                srcDir 'src/main/protobuf'
+                srcDir 'src/main/protocolbuffers'
+                // In addition to the default '**/*.proto' (use with caution).
+                // Using an extension other than 'proto' is NOT recommended,
+                // because when proto files are published along with class files, we can
+                // only tell the type of a file from its extension.
+                include '**/*.protodevel'
+            }
+            java {
+
+            }
+        }
+        test {
+            proto {
+                // In addition to the default 'src/test/proto'
+                srcDir 'src/test/protocolbuffers'
+            }
+        }
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.12'
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.2.0'
@@ -41,23 +80,26 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.google.protobuf:protobuf-java:3.4.0'
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.0.0"
     }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.12'
+    plugins {
+        lite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0"
+        }
     }
-}
-
-android { //this is necessary to fix " Cannot inline bytecode built with JVM target 1.8 into bytecode that is being built with JVM target 1.6. "
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                lite { }
+            }
+        }
     }
 }
