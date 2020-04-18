@@ -159,8 +159,12 @@ class ServerSocketThread(
         return connectedClient
     }
 
-    fun shouldEncrypt():Boolean {
-        return client()?.hasPubkey()!!
+    fun encryptionAvailable():Boolean {
+        return if (connectedClient != null) {
+            connectedClient?.hasPubkey()!!
+        } else {
+            false;
+        }
     }
 
     fun getPublicKey(): PublicKey? {

@@ -14,7 +14,6 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
-import pw.byakuren.linuxsync.io.NotificationProto
 import pw.byakuren.linuxsync.io.NotificationProto.NotificationData
 import pw.byakuren.linuxsync.io.NotificationProto.NotificationData.newBuilder
 import pw.byakuren.linuxsync.io.SegmentType
@@ -62,6 +61,9 @@ class NotificationListener : NotificationListenerService() {
         if (MainActivity.socketThread == null) {
             Log.d(TAG, "socket doesn't exist, ignoring notification")
             return
+        } else if (!MainActivity.socketThread!!.isConnected()) {
+            Log.d(TAG, "socket isn't connected, ignoring notification")
+            return
         }
         if (notif == null) {
             Log.d(TAG, "notfication is null");
@@ -75,7 +77,7 @@ class NotificationListener : NotificationListenerService() {
         val protobuf = prefs.getBoolean(getString(R.string.setting_use_protobuf), true)
         val encryptEnabled = prefs.getBoolean(getString(R.string.setting_use_rsa), true)
 
-        val shouldEncrypt: Boolean = MainActivity.socketThread?.shouldEncrypt()!! && encryptEnabled
+        val shouldEncrypt: Boolean = MainActivity.socketThread?.encryptionAvailable()!! && encryptEnabled
 
         val data = if (protobuf && !shouldEncrypt)
             byteArrayOf(0x3D) + formatNotificationToProtobufBytes(notif)
