@@ -113,39 +113,6 @@ class MainActivity : AppCompatActivity() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun masterSwitchToggle(view: View) {
-        val switch = view as Switch
-        if (switch.isChecked) {
-            startListen()
-        } else {
-            stopListen()
-        }
-    }
-
-    fun automaticSwitchToggle(view: View) {
-        val switch = view as Switch
-        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
-        val editor = prefs.edit()
-        editor.putBoolean(getString(R.string.setting_automatic_connections), switch.isChecked)
-        editor.apply()
-    }
-
-    fun protobufSwitchToggle(view: View) {
-        val switch = view as Switch
-        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
-        val editor = prefs.edit()
-        editor.putBoolean(getString(R.string.setting_use_protobuf), switch.isChecked)
-        editor.apply()
-    }
-
-    fun batteryStatusSwitchToggle(view: View) {
-        val switch = view as Switch
-        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
-        val editor = prefs.edit()
-        editor.putBoolean(getString(R.string.setting_battery_updates), switch.isChecked)
-        editor.apply()
-    }
-
     fun startListen() {
         Log.d(TAG, "Enable client connections")
         if (notificationListener != null) {
@@ -204,5 +171,51 @@ class MainActivity : AppCompatActivity() {
         with(NotificationManagerCompat.from(view.context)) {
             notify(0, nbuilder.build())
         }
+    }
+
+    /**
+     * All the toggle switch methods below
+     */
+
+
+    fun masterSwitchToggle(view: View) {
+        val switch = view as Switch
+        if (switch.isChecked) {
+            startListen()
+        } else {
+            stopListen()
+        }
+    }
+
+    fun automaticSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_automatic_connections), switch.isChecked)
+        editor.apply()
+    }
+
+    fun protobufSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_use_protobuf), switch.isChecked)
+        editor.apply()
+    }
+
+    fun batteryStatusSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_battery_updates), switch.isChecked)
+        editor.apply()
+    }
+
+    fun encryptionSwitchToggle(view: View) {
+        val switch = view as Switch
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(getString(R.string.setting_use_rsa), switch.isChecked)
+        editor.apply()
     }
 }

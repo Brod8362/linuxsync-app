@@ -71,11 +71,11 @@ class NotificationListener : NotificationListenerService() {
             Log.v(TAG, "ignoring own persistent notification")
             return
         }
-        val protobuf =
-            getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE).getBoolean(
-                getString(R.string.setting_use_protobuf), true)
+        val prefs = getSharedPreferences(getString(R.string.prefs_settings), MODE_PRIVATE)
+        val protobuf = prefs.getBoolean(getString(R.string.setting_use_protobuf), true)
+        val encryptEnabled = prefs.getBoolean(getString(R.string.setting_use_rsa), true)
 
-        val shouldEncrypt: Boolean = MainActivity.socketThread?.shouldEncrypt()!!
+        val shouldEncrypt: Boolean = MainActivity.socketThread?.shouldEncrypt()!! && encryptEnabled
 
         val data = if (protobuf && !shouldEncrypt)
             byteArrayOf(0x3D) + formatNotificationToProtobufBytes(notif)

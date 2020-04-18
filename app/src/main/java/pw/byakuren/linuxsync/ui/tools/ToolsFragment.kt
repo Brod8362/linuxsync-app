@@ -1,6 +1,7 @@
 package pw.byakuren.linuxsync.ui.tools
 
 import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -36,8 +37,17 @@ class ToolsFragment : Fragment() {
             edit.apply()
             Toast.makeText(this.context,"Added new trusted device", Toast.LENGTH_SHORT).show()
         }
-        val batt_switch: Switch = root.findViewById(R.id.battery_update_switch)
-        batt_switch.isChecked = settings.getBoolean(getString(R.string.setting_battery_updates), true)
+
+        setSwitchStates(root, settings)
+
         return root
+    }
+
+    private fun setSwitchStates(view: View, settings: SharedPreferences) {
+        val batt_switch: Switch = view.findViewById(R.id.battery_update_switch)
+        batt_switch.isChecked = settings.getBoolean(getString(R.string.setting_battery_updates), true)
+
+        val enc_switch: Switch = view.findViewById(R.id.rsa_switch)
+        enc_switch.isChecked = settings.getBoolean(getString(R.string.setting_use_rsa), true)
     }
 }
