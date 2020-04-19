@@ -32,12 +32,12 @@ class ShareFragment : Fragment() {
 
 
     fun populateRecycler(sharedPreferences: SharedPreferences, view: View) {
-        val ipList: Array<String> = sharedPreferences.all.keys.toTypedArray()
-        val dateList: Array<String> = sharedPreferences.all.values.map { a -> a.toString() }.toTypedArray()
+        val pubkeyList: Array<String> = sharedPreferences.all.keys.toTypedArray()
+        val hostnameList: Array<String> = sharedPreferences.all.values.map { a -> a.toString() }.toTypedArray()
 
         val linearLayoutManager = LinearLayoutManager(view.context)
         val recyclerView: RecyclerView = view.findViewById(R.id.deviceRecyclerView)
-        val adapter = DeviceAdapter(ipList, dateList, sharedPreferences)
+        val adapter = DeviceAdapter(pubkeyList, hostnameList, sharedPreferences)
 
         recyclerView.layoutManager = linearLayoutManager
         recyclerView.adapter = adapter

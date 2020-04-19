@@ -9,23 +9,23 @@ import pw.byakuren.linuxsync.R
 import java.lang.IllegalStateException
 import java.net.InetAddress
 
-class ConnectionAcceptDialog(val addrString: String, val hostname: String) : DialogFragment() {
+class ConnectionAcceptDialog(val hostname: String) : DialogFragment() {
 
     var res = false
     var completed = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val msg = getString(R.string.accept_connection_message, addrString, hostname)
+        val msg = getString(R.string.accept_connection_message, hostname)
         return activity?.let {
             val builder = AlertDialog.Builder(it)
                 .setMessage(msg)
-                .setPositiveButton("Yes", DialogInterface.OnClickListener { dialog, id ->
+                .setPositiveButton("Yes") { _, _ ->
                     res = true
                     completed = true
-                })
-                .setNegativeButton("No", DialogInterface.OnClickListener { dialog, id ->
+                }
+                .setNegativeButton("No") { _, _ ->
                     completed = true
-                })
+                }
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }

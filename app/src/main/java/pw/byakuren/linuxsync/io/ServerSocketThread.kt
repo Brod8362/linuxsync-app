@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit
 
 class ServerSocketThread(
     private val context: Context, port: Int, private val sharedPreferences: SharedPreferences,
-    private val dialogCallback: ((InetAddress) -> Boolean), private val notificationCallback:((String) -> Unit)
+    private val dialogCallback: ((String) -> Boolean), private val notificationCallback:((String) -> Unit)
 ) : Thread() {
 
     private var serverSocket: ServerSocket = ServerSocket(port)
@@ -65,15 +65,16 @@ class ServerSocketThread(
             return
         }
 
+        val authString = authInfo.toByteString().map { b -> String.format("%02X", b) }.joinToString("")
         val hostname = authInfo.hostname
-        if (sharedPreferences.contains(addrString) ||
-            dialogCallback.invoke(tempSocket.inetAddress)
+        if (sharedPreferences.contains(authString) ||
+            dialogCallback.invoke(hostname)
         ) {
-            if (!sharedPreferences.contains(addrString)) {
+            if (!sharedPreferences.contains(authString)) {
                 val editor = sharedPreferences.edit()
-                editor.putString(addrString, LocalDateTime.now().toString())
+                editor.putString(authString, hostname)
                 editor.commit()
-                Log.d(TAG, "Added " + tempSocket.inetAddress.toString() + " to trusted addresses")
+                Log.d(TAG, "Added $hostname to trusted clients")
             }
 
             connectedSocket = tempSocket

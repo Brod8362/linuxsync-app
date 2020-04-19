@@ -21,7 +21,7 @@
     <string name="persistent_channel_description">Channel for foreground service</string>
     <string name="persistent_channel_id">linuxsync_persistent</string>
 
-    <string name="accept_connection_message">Accept the connection from %1$s (%2$s)?</string>
+    <string name="accept_connection_message">Accept the connection from %1$s? %1$s is not currently trusted.</string>
 
     <string name="placeholder">you shouldn\'t see this</string>
 
@@ -75,5 +75,7 @@
     <string name="battery_updates_description">Send notifications when the battery status changes (low charge, power connected, power disconnected, etc.)</string>
     <string name="rsa_encryption_text">Enable Encryption</string>
     <string name="encryption_description">Encrypt data when possible. May cause issues with older clients. (Recommended)</string>
+    <string name="clear_description">Clear all trusted devices. This cannot be undone.</string>
+    <string name="clear_button">Clear</string>
 
 </resources>

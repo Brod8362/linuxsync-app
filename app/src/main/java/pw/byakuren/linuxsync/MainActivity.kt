@@ -139,8 +139,8 @@ class MainActivity : AppCompatActivity() {
 //        view.text = getString(R.string.connected_counter, connectedDevices)
     }
 
-    fun showAcceptDialog(addr: String, hostname: String): Boolean {
-        val dialog = ConnectionAcceptDialog(addr, hostname)
+    fun showAcceptDialog(hostname: String): Boolean {
+        val dialog = ConnectionAcceptDialog(hostname)
         dialog.show(this.supportFragmentManager, "BYAKUREN_DIALOG")
         while (!dialog.completed) {
         }
@@ -177,6 +177,12 @@ class MainActivity : AppCompatActivity() {
      * All the toggle switch methods below
      */
 
+    fun clearAllTrustedDevices(view: View) {
+        val prefs = getSharedPreferences(getString(R.string.prefs_trusted_devices), MODE_PRIVATE)
+        val edit = prefs.edit()
+        edit.clear()
+        edit.apply()
+    }
 
     fun masterSwitchToggle(view: View) {
         val switch = view as Switch

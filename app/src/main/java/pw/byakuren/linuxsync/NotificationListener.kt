@@ -207,7 +207,7 @@ class NotificationListener : NotificationListenerService() {
                     getString(R.string.prefs_trusted_devices),
                     Context.MODE_PRIVATE
                 ),
-                { addr -> showAcceptDialog(addr.toString(), addr.hostName) },
+                { hostname -> showAcceptDialog(hostname) },
                 { reason -> updateNotification(reason) }
             )
             MainActivity.socketThread!!.setDisconnectCallback { stopListen(); startListen() }
@@ -230,8 +230,8 @@ class NotificationListener : NotificationListenerService() {
         MainActivity.socketThread = null
     }
 
-    fun showAcceptDialog(addr: String, hostname: String): Boolean {
-        val dialog = ConnectionAcceptDialog(addr, hostname)
+    fun showAcceptDialog(hostname: String): Boolean {
+        val dialog = ConnectionAcceptDialog(hostname)
         MainActivity.fragmentManager?.let { dialog.show(it, "BYAKUREN_DIALOG") }
         while (!dialog.completed) { /* just waiting for it to complete */
         }
