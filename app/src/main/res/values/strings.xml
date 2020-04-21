@@ -13,7 +13,7 @@
     <string name="menu_tools">Tools</string>
     <string name="menu_share">Trusted Devices</string>
     <string name="menu_send">Send</string>
-    <string name="service_name">Notification Service</string>
+    <string name="service_name">LinuxSync Notification Service</string>
 
     <string name="channel_name">NotificationChannel</string>
     <string name="channel_description">Testing Notif Channel</string>
