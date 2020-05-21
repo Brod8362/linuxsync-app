@@ -268,7 +268,7 @@ class NotificationListener : NotificationListenerService() {
         return Notification.Builder(this, getString(R.string.persistent_channel_id))
             .setContentTitle("LinuxSync")
             .setContentText(content)
-            .setSmallIcon(R.drawable.ic_menu_send)
+            .setSmallIcon(R.drawable.ic_app_icon)
             .setTicker("LinuxSync is running")
             .setContentIntent(notifyPendingIntent)
             .build()
